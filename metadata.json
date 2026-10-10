@@ -1,0 +1,8 @@
+{
+  "name": "ATmega640 펌웨어 개발 & 인터랙티브 아키텍처 가이드",
+  "description": "ATmega640 마이크로컨트롤러 아키텍처 비교, 100핀 대화형 핀맵/포트 탐색기, SFR 레지스터 계산기, 전력/퓨즈 비트 설정 및 오픈소스 펌웨어 개발 허브",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
