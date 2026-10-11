@@ -9,6 +9,9 @@ import { InterruptVectorTableExplorer } from './InterruptVectorTableExplorer';
 import { CodeSnippetGenerator } from './CodeSnippetGenerator';
 import { BuildSystemGenerator } from './BuildSystemGenerator';
 import { RegisterStatusDashboard } from './RegisterStatusDashboard';
+import { RegisterSnapshotSimulator } from './RegisterSnapshotSimulator';
+import { RegisterCodeSnippetGenerator } from './RegisterCodeSnippetGenerator';
+import { RegisterConfigComparator } from './RegisterConfigComparator';
 import { PeripheralRegisterTreeView } from './PeripheralRegisterTreeView';
 import { SerialTimelineSimulator } from './SerialTimelineSimulator';
 import { SerialDebugLogParser } from './SerialDebugLogParser';
@@ -262,6 +265,12 @@ void Write_OCR1A_Atomic(uint16_t val) {
 
       {/* Real-time Register Status Dashboard (Live Bit Monitor & Datasheet Inspector) */}
       <RegisterStatusDashboard selectedMCU={selectedMCU} />
+
+      {/* Register Snapshot Simulator (Interactive SFR to Hardware Physical Reaction: Pins, PWM, Overflow) */}
+      <RegisterSnapshotSimulator selectedMCU={selectedMCU} />
+
+      {/* C Register Initialization Code Generator (Clean Bitwise Shift Macros & Atomic Blocks) */}
+      <RegisterCodeSnippetGenerator selectedMCU={selectedMCU} />
 
       {/* SFR Register Differential Tool (Cross-MCU Mapping & Migration Hurdles) */}
       <SfrRegisterDifferential selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />

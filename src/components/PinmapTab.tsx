@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { MCU_PROFILES, SupportedMCU, PinDefinition } from '../data/pinmapData';
 import { Search, Compass, Cpu, Layers, ExternalLink, Filter } from 'lucide-react';
 import { PinMultiplexingConflictChecker } from './PinMultiplexingConflictChecker';
+import { GpioSignalLogicSimulator } from './GpioSignalLogicSimulator';
 
 interface Props {
   selectedMCU: SupportedMCU;
@@ -162,6 +163,13 @@ export const PinmapTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
 
       {/* Pin Multiplexing Conflict Checker */}
       <PinMultiplexingConflictChecker
+        selectedMCU={selectedMCU}
+        onSelectMCU={onSelectMCU}
+        onNavigateToPin={handleNavigateToPin}
+      />
+
+      {/* GPIO Signal Logic Simulator (Pull-up, Direction, Real-time Voltage & Toggle Controls) */}
+      <GpioSignalLogicSimulator
         selectedMCU={selectedMCU}
         onSelectMCU={onSelectMCU}
         onNavigateToPin={handleNavigateToPin}

@@ -6,15 +6,16 @@ import { PinmapTab } from './components/PinmapTab';
 import { RegistersTab } from './components/RegistersTab';
 import { PowerAndFusesTab } from './components/PowerAndFusesTab';
 import { ResourcesTab } from './components/ResourcesTab';
+import { ProgramTab } from './components/ProgramTab';
 import { GlobalRegisterSearch } from './components/GlobalRegisterSearch';
-import { Cpu, HardDrive, Share2, Radio, Layers, Gauge, Activity, Table } from 'lucide-react';
+import { Cpu, HardDrive, Share2, Radio, Layers, Gauge, Activity, Table, Download } from 'lucide-react';
 import { SupportedMCU, MCU_PROFILES } from './data/pinmapData';
 import { GpioSignalParams, DEFAULT_GPIO_PARAMS } from './data/gpioSignalTypes';
 import confetti from 'canvas-confetti';
 
 export default function App() {
   const [selectedMCU, setSelectedMCU] = useState<SupportedMCU>('atmega640');
-  const [activeTab, setActiveTab] = useState<'comparison' | 'universal_comp' | 'arch' | 'pinmap' | 'registers' | 'power' | 'resources'>('comparison');
+  const [activeTab, setActiveTab] = useState<'comparison' | 'universal_comp' | 'arch' | 'pinmap' | 'registers' | 'power' | 'resources' | 'program'>('comparison');
   const [copiedShare, setCopiedShare] = useState(false);
 
   // Virtual Oscilloscope & GPIO Toggling Shared Parameters
@@ -216,6 +217,17 @@ export default function App() {
                 전력/퓨즈/에라타
               </button>
               <button
+                onClick={() => setActiveTab('program')}
+                className={`whitespace-nowrap px-3.5 py-1.5 font-bold rounded-lg transition-all flex items-center gap-1.5 ${
+                  activeTab === 'program'
+                    ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+                    : 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10'
+                }`}
+              >
+                <Download className="w-3.5 h-3.5" />
+                프로그램 다운로드
+              </button>
+              <button
                 onClick={() => setActiveTab('resources')}
                 className={`whitespace-nowrap px-3 py-1.5 font-semibold rounded-lg transition-all ${
                   activeTab === 'resources'
@@ -348,6 +360,9 @@ export default function App() {
         )}
         {activeTab === 'resources' && (
           <ResourcesTab selectedMCU={selectedMCU} onSelectMCU={setSelectedMCU} />
+        )}
+        {activeTab === 'program' && (
+          <ProgramTab selectedMCU={selectedMCU} onSelectMCU={setSelectedMCU} />
         )}
       </main>
 

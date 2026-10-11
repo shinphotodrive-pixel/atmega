@@ -3,6 +3,19 @@ import { RESOURCES, ResourceItem } from '../data/resourcesData';
 import { Github, Youtube, Search, ExternalLink, BookOpen, Star, Clock, CheckCircle2, Cpu } from 'lucide-react';
 import { SupportedMCU, MCU_PROFILES } from '../data/pinmapData';
 import { PeripheralResourceLibrarian } from './PeripheralResourceLibrarian';
+import { MakefileGenerator } from './MakefileGenerator';
+import { IoPinProtectionDesigner } from './IoPinProtectionDesigner';
+import { CompilerOutputSizeProfiler } from './CompilerOutputSizeProfiler';
+import { BuildTimePerformanceAnalyzer } from './BuildTimePerformanceAnalyzer';
+import { ExternalInterruptTutorial } from './ExternalInterruptTutorial';
+import { BitBangTimingCalculator } from './BitBangTimingCalculator';
+import { AvrPowerConsumptionSimulator } from './AvrPowerConsumptionSimulator';
+import { CompilerOptimizationReportGenerator } from './CompilerOptimizationReportGenerator';
+import { AvrStackHeapCollisionAnalyzer } from './AvrStackHeapCollisionAnalyzer';
+import { BuildArtifactDependencyVisualizer } from './BuildArtifactDependencyVisualizer';
+import { MemoryFragmentationAnalyzer } from './MemoryFragmentationAnalyzer';
+import { PowerScenarioPlanner } from './PowerScenarioPlanner';
+import { AvrMpuProtectionSimulator } from './AvrMpuProtectionSimulator';
 
 interface Props {
   selectedMCU: SupportedMCU;
@@ -54,6 +67,45 @@ export const ResourcesTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
 
       {/* Peripheral Resource Librarian Component */}
       <PeripheralResourceLibrarian selectedMCU={selectedMCU} />
+
+      {/* Makefile Generator (Compiler Flags -Os/-ffunction-sections, Target F_CPU, MCU & avrdude skeleton) */}
+      <MakefileGenerator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* I/O Pin Protection Designer (Series Resistor, Pull-up/down, Flyback Diode & TVS Clamping) */}
+      <IoPinProtectionDesigner selectedMCU={selectedMCU} />
+
+      {/* Compiler Output Size Profiler (.map file parser & donut chart segment visualizer) */}
+      <CompilerOutputSizeProfiler selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Build Time Performance Analyzer (Compiler Flags Optimization & LTO Impact Trade-off) */}
+      <BuildTimePerformanceAnalyzer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* External Interrupt (EICRA/EIMSK) Tutorial & Safe ISR Writing Guide */}
+      <ExternalInterruptTutorial selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Bit-banging Protocol Timing Calculator (Microsecond Delays & NOP Assembly Generator) */}
+      <BitBangTimingCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* AVR Power Consumption Simulator (Clock, Vcc, Peripherals Checklist & mA Calculator) */}
+      <AvrPowerConsumptionSimulator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Compiler Optimization Report Generator (Data/BSS/Stack, Struct Memory Alignment & Padding Gaps) */}
+      <CompilerOptimizationReportGenerator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* AVR Stack/Heap Collision Analyzer (Map Section & Call Tree Depth Profiler) */}
+      <AvrStackHeapCollisionAnalyzer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Build Artifact Dependency Visualizer (.map Archive Member Inclusion & Bloat Eliminator) */}
+      <BuildArtifactDependencyVisualizer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Memory Fragmentation Analyzer (BSS & Data Alignment Padding & Struct Reordering Refactor) */}
+      <MemoryFragmentationAnalyzer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Power Scenario Planner (Timeline State Transitions, Charge Per Interval & Battery Life) */}
+      <PowerScenarioPlanner selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* AVR MPU Protection Simulator (Memory Zones, Lock Bits & Segment Violations) */}
+      <AvrMpuProtectionSimulator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
 
       {/* Filter and Search Bar */}
       <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 backdrop-blur shadow-lg space-y-4">

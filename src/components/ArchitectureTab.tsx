@@ -12,6 +12,10 @@ import { InstructionExecutionTimeProfiler } from './InstructionExecutionTimeProf
 import { VirtualLogicAnalyzer } from './VirtualLogicAnalyzer';
 import { EepromEnduranceEstimator } from './EepromEnduranceEstimator';
 import { EepromDataLoggingLifeCycleSimulator } from './EepromDataLoggingLifeCycleSimulator';
+import { DmaTransferConfigGuide } from './DmaTransferConfigGuide';
+import { ClockPowerAnalyzer } from './ClockPowerAnalyzer';
+import { AdcNoiseReductionCalibrationCalculator } from './AdcNoiseReductionCalibrationCalculator';
+import { PowerConsumptionTimelineAnalyzer } from './PowerConsumptionTimelineAnalyzer';
 import { GpioSignalParams, DEFAULT_GPIO_PARAMS } from '../data/gpioSignalTypes';
 
 interface MCUModel {
@@ -439,6 +443,18 @@ export const ArchitectureTab: React.FC<Props> = ({
 
       {/* EEPROM Data Logging Life-Cycle Simulator (Address-Range Wear & Projected End of Life Warning) */}
       <EepromDataLoggingLifeCycleSimulator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* DMA (Direct Memory Access) Transfer Config Guide & Cycle Estimator */}
+      <DmaTransferConfigGuide selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Clock-based Power Analyzer & Voltage-Frequency Operating Range Visualization */}
+      <ClockPowerAnalyzer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* ADC Noise Reduction & Calibration Calculator (Decoupling Cap, VREF & Sampling Rate on ENOB) */}
+      <AdcNoiseReductionCalibrationCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Power Consumption Timeline Analyzer (Active, Idle, Sleep Profiles, Peak/Avg Current & Battery Lifetime) */}
+      <PowerConsumptionTimelineAnalyzer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
 
       {/* MCU-Specific Architecture Deep Dives */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
