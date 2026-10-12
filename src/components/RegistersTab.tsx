@@ -20,6 +20,7 @@ import { EepromDataVisualizer } from './EepromDataVisualizer';
 import { FirmwareUnitTestGenerator } from './FirmwareUnitTestGenerator';
 import { HardwareDebuggerConfigurator } from './HardwareDebuggerConfigurator';
 import { SfrRegisterDifferential } from './SfrRegisterDifferential';
+import { LiveRegisterWatcher } from './LiveRegisterWatcher';
 import { GpioTogglingConfigurator } from './GpioTogglingConfigurator';
 import { TimerPrescalerCalculator } from './TimerPrescalerCalculator';
 import { UartBaudRateErrorCalculator } from './UartBaudRateErrorCalculator';
@@ -262,6 +263,9 @@ void Write_OCR1A_Atomic(uint16_t val) {
 
       {/* D3.js Memory Map Heatmap (SRAM / EEPROM / IO Registers) */}
       <MemoryMapD3Heatmap selectedMCU={selectedMCU} />
+
+      {/* Live Register Watcher (Custom Watch List & Simulated Serial Stream) */}
+      <LiveRegisterWatcher selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
 
       {/* Real-time Register Status Dashboard (Live Bit Monitor & Datasheet Inspector) */}
       <RegisterStatusDashboard selectedMCU={selectedMCU} />

@@ -20,6 +20,7 @@ import {
   FileCode,
   Gauge
 } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import { SupportedMCU, MCU_PROFILES } from '../data/pinmapData';
 
 interface Props {
@@ -241,6 +242,18 @@ mul r18, r19        ; 2 cycles: Hardware multiplier (Result in R1:R0)
 add r24, r0         ; 1 cycle: Accumulate low byte
 adc r25, r1         ; 1 cycle: Accumulate high byte with Carry
 clr r1              ; 1 cycle: AVR-GCC ABI convention (R1 must always be 0!)`
+  },
+  {
+    id: 'c_bottleneck_demo',
+    name: 'C 코드 병목 구간 (HAL 함수 & 나눗셈)',
+    category: 'C Bottleneck Benchmark',
+    description: 'Arduino HAL 함수와 소프트웨어 정수 나눗셈 루틴이 초래하는 수백 사이클의 병목 구간 분석 및 최적화.',
+    loopCount: 1,
+    code: `// [병목 C 코드 예시]
+digitalWrite(13, HIGH);   // HAL 핀 룩업 오버헤드 (~62 cycles)
+val = sensor_raw / 4;      // 소프트웨어 나눗셈 에뮬레이션 (~95 cycles)
+digitalRead(2);           // HAL 읽기 오버헤드 (~52 cycles)
+digitalWrite(13, LOW);    // HAL 핀 룩업 오버헤드 (~62 cycles)`
   }
 ];
 
@@ -570,6 +583,77 @@ export const InstructionExecutionTimeProfiler: React.FC<Props> = ({
     setSourceCode(preset.code);
     setLoopCount(preset.loopCount);
     setBranchDecisions({});
+  };
+
+  // Dynamic Bottleneck Analysis
+  const bottleneckAnalysis = useMemo(() => {
+    const issues: {
+      lineNum: number;
+      type: 'hal_io' | 'division' | 'float' | 'memory';
+      title: string;
+      desc: string;
+      currentCycles: number;
+      optimizedCycles: number;
+      suggestedFix: string;
+    }[] = [];
+
+    parsedLines.forEach((line) => {
+      if (line.rawText.includes('digitalWrite')) {
+        issues.push({
+          lineNum: line.lineNum,
+          type: 'hal_io',
+          title: '아두이노 digitalWrite() 고부하 I/O',
+          desc: '핀 번호 역참조 및 타이머 인터럽트 마스크 처리로 인해 약 62 사이클 소모',
+          currentCycles: 62,
+          optimizedCycles: 2,
+          suggestedFix: 'PORTB |= (1 << PB5) 또는 PORTB &= ~(1 << PB5) 직접 I/O 제어로 교체'
+        });
+      } else if (line.rawText.includes('digitalRead')) {
+        issues.push({
+          lineNum: line.lineNum,
+          type: 'hal_io',
+          title: '아두이노 digitalRead() 저속 비트 읽기',
+          desc: '핀 포트 룩업 오버헤드로 인해 약 52 사이클 소모',
+          currentCycles: 52,
+          optimizedCycles: 1,
+          suggestedFix: 'PIND & (1 << PD2) 직접 레지스터 비트 테스트로 교체'
+        });
+      } else if (line.rawText.includes('/') && !line.rawText.startsWith('//') && !line.rawText.startsWith('/*')) {
+        issues.push({
+          lineNum: line.lineNum,
+          type: 'division',
+          title: '소프트웨어 정수 나눗셈 (__udivmod)',
+          desc: 'AVR은 하드웨어 나눗셈기가 없어 16비트 나눗셈에 약 95 사이클의 소프트웨어 루프 소모',
+          currentCycles: 95,
+          optimizedCycles: 2,
+          suggestedFix: '2의 거듭제곱 나눗셈은 val >> 2 비트 시프트 연산으로 교체'
+        });
+      }
+    });
+
+    const totalCurrentCycles = issues.reduce((acc, i) => acc + i.currentCycles, 0);
+    const totalOptimizedCycles = issues.reduce((acc, i) => acc + i.optimizedCycles, 0);
+    const savingsCycles = totalCurrentCycles - totalOptimizedCycles;
+    const savingsPercent = totalCurrentCycles > 0 ? ((savingsCycles / totalCurrentCycles) * 100).toFixed(1) : '0';
+
+    return {
+      issues,
+      hasBottlenecks: issues.length > 0,
+      totalCurrentCycles,
+      totalOptimizedCycles,
+      savingsCycles,
+      savingsPercent
+    };
+  }, [parsedLines]);
+
+  const handleApplyOptimization = () => {
+    let optCode = sourceCode;
+    optCode = optCode.replace(/digitalWrite\s*\(\s*13\s*,\s*HIGH\s*\);?/g, 'PORTB |= (1 << PB5); // 최적화: sbi 2사이클');
+    optCode = optCode.replace(/digitalWrite\s*\(\s*13\s*,\s*LOW\s*\);?/g, 'PORTB &= ~(1 << PB5); // 최적화: cbi 2사이클');
+    optCode = optCode.replace(/digitalRead\s*\(\s*2\s*\);?/g, '(PIND & (1 << PD2)); // 최적화: 1사이클');
+    optCode = optCode.replace(/([a-zA-Z0-9_]+)\s*=\s*([a-zA-Z0-9_]+)\s*\/\s*4;?/g, '$1 = $2 >> 2; // 최적화: 비트 시프트 2사이클');
+    setSourceCode(optCode);
+    confetti({ particleCount: 40, spread: 60, origin: { y: 0.7 } });
   };
 
   const handleCopyReport = () => {
@@ -937,6 +1021,47 @@ export const InstructionExecutionTimeProfiler: React.FC<Props> = ({
           </div>
         </div>
       </div>
+
+      {/* Dynamic Bottleneck Detector & Optimization Advisor */}
+      {bottleneckAnalysis.hasBottlenecks && (
+        <div className="bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-950 p-4 rounded-xl border border-amber-500/40 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-400" />
+              <span className="text-xs font-bold text-white uppercase tracking-wider">
+                발견된 성능 병목 구간 ({bottleneckAnalysis.issues.length}건) &amp; 최적화 제안
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/40">
+                예상 사이클 단축: -{bottleneckAnalysis.savingsCycles} clk ({bottleneckAnalysis.savingsPercent}%)
+              </span>
+              <button
+                onClick={handleApplyOptimization}
+                className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-md shadow-emerald-600/20 flex items-center gap-1"
+              >
+                <Zap className="w-3.5 h-3.5" />
+                <span>추천 최적화 코드 자동 적용</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs font-mono">
+            {bottleneckAnalysis.issues.map((iss, idx) => (
+              <div key={idx} className="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800/80 space-y-1">
+                <div className="flex items-center justify-between text-amber-300 font-bold">
+                  <span>Line #{iss.lineNum}: {iss.title}</span>
+                  <span className="text-[11px] text-rose-400">{iss.currentCycles} clk → {iss.optimizedCycles} clk</span>
+                </div>
+                <p className="text-[11px] text-slate-400 font-sans leading-snug">{iss.desc}</p>
+                <div className="text-[10px] text-emerald-300 bg-emerald-950/40 p-1.5 rounded border border-emerald-800/30">
+                  💡 제안: {iss.suggestedFix}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Optimization Analysis & AVR Microarchitecture Insights */}
       <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">

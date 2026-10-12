@@ -16,6 +16,12 @@ import { BuildArtifactDependencyVisualizer } from './BuildArtifactDependencyVisu
 import { MemoryFragmentationAnalyzer } from './MemoryFragmentationAnalyzer';
 import { PowerScenarioPlanner } from './PowerScenarioPlanner';
 import { AvrMpuProtectionSimulator } from './AvrMpuProtectionSimulator';
+import { DynamicMemoryAllocationTracker } from './DynamicMemoryAllocationTracker';
+import { AvrInterruptLatencyAnalyzer } from './AvrInterruptLatencyAnalyzer';
+import { CommunicationProtocolFrameAnalyzer } from './CommunicationProtocolFrameAnalyzer';
+import { AvrWatchdogTuningGuide } from './AvrWatchdogTuningGuide';
+import { InstructionExecutionTimeProfiler } from './InstructionExecutionTimeProfiler';
+import { AvrLowPowerBatteryLifeCalculator } from './AvrLowPowerBatteryLifeCalculator';
 
 interface Props {
   selectedMCU: SupportedMCU;
@@ -106,6 +112,24 @@ export const ResourcesTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
 
       {/* AVR MPU Protection Simulator (Memory Zones, Lock Bits & Segment Violations) */}
       <AvrMpuProtectionSimulator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Dynamic Memory Allocation (malloc/free) Tracker & Heap Fragmentation Analyzer */}
+      <DynamicMemoryAllocationTracker selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* AVR Interrupt Latency Analyzer (Context Switching Overhead & Stack Overflow Guide) */}
+      <AvrInterruptLatencyAnalyzer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* AVR Communication Protocol Frame Analyzer (UART, SPI, I2C Timing & Error Diagnostics) */}
+      <CommunicationProtocolFrameAnalyzer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* AVR Watchdog Timer (WDT) Tuning Guide & Reset Prevention C Code Generator */}
+      <AvrWatchdogTuningGuide selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* AVR Instruction Execution Time & Cycle Profiler (Bottleneck Analysis & Optimization Advisor) */}
+      <InstructionExecutionTimeProfiler selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* AVR Low-Power Mode Battery Life Calculator & Standby Transition Optimizer */}
+      <AvrLowPowerBatteryLifeCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
 
       {/* Filter and Search Bar */}
       <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 backdrop-blur shadow-lg space-y-4">
