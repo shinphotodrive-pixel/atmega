@@ -91,9 +91,6 @@ export default function App() {
                   <h1 className="text-base sm:text-lg font-black text-white tracking-tight">
                     AVR 펌웨어 개발 & 아키텍처 가이드
                   </h1>
-                  <span className="hidden sm:inline-block text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full">
-                    ATmega640 • ATmega128 • ATmega328P (+ STM32 / PIC / 8051 비교)
-                  </span>
                 </div>
                 <p className="text-xs text-slate-400 hidden sm:block">
                   MCU Spec Matrix Comparison, Pinout Explorer, Register Calculators & Low-Power Engineering
@@ -103,7 +100,7 @@ export default function App() {
 
             {/* MCU Quick Switcher in Header */}
             <div className="hidden md:flex items-center gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
-              {(['atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcuId) => {
+              {(['atmega2560', 'atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcuId) => {
                 const isSelected = selectedMCU === mcuId;
                 return (
                   <button
@@ -163,7 +160,7 @@ export default function App() {
                 }`}
               >
                 <Table className="w-3.5 h-3.5" />
-                3종 사양 비교
+                AVR 4종 사양 비교
               </button>
               <button
                 onClick={() => setActiveTab('universal_comp')}
@@ -188,13 +185,13 @@ export default function App() {
               </button>
               <button
                 onClick={() => setActiveTab('pinmap')}
-                className={`whitespace-nowrap px-3 py-1.5 font-semibold rounded-lg transition-all ${
+                className={`whitespace-nowrap px-3 py-1.5 font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
                   activeTab === 'pinmap'
-                    ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+                    ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-bold'
                     : 'text-slate-400 hover:text-white hover:bg-slate-900'
                 }`}
               >
-                하드웨어 핀맵 & 포트
+                <span>하드웨어 핀맵 & 핀아웃 다이어그램</span>
               </button>
               <button
                 onClick={() => setActiveTab('registers')}
@@ -240,14 +237,14 @@ export default function App() {
             </nav>
 
             {/* Mobile MCU toggle */}
-            <div className="flex md:hidden items-center justify-between gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
-              <span className="text-[10px] text-slate-500 pl-1 font-mono">타겟 MCU:</span>
-              {(['atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcuId) => (
+            <div className="flex md:hidden items-center justify-between gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs overflow-x-auto">
+              <span className="text-[10px] text-slate-500 pl-1 font-mono shrink-0">타겟 MCU:</span>
+              {(['atmega2560', 'atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcuId) => (
                 <button
                   key={mcuId}
                   onClick={() => setSelectedMCU(mcuId)}
-                  className={`px-2 py-1 text-[11px] font-bold rounded-lg transition ${
-                    selectedMCU === mcuId ? 'bg-amber-500 text-slate-950' : 'text-slate-400'
+                  className={`px-2 py-1 text-[11px] font-bold rounded-lg transition whitespace-nowrap ${
+                    selectedMCU === mcuId ? 'bg-amber-500 text-slate-950 font-black' : 'text-slate-400'
                   }`}
                 >
                   {MCU_PROFILES[mcuId].name}

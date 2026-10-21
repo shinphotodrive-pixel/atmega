@@ -209,7 +209,8 @@ export const BuildTimePerformanceAnalyzer: React.FC<Props> = ({ selectedMCU }) =
   const stats = useMemo(() => {
     // Base Single-Core Compile time baseline: approx 0.15s per source file (at 250 LOC/file)
     const baseTimeSec = Math.max(0.5, (sourceFileCount * 0.18) + (locCount / 30000));
-    const baseFlashBytes = Math.min(65536, Math.max(2048, locCount * 3.8));
+    const maxFlash = (selectedMCU === 'atmega2560' ? 262144 : selectedMCU === 'atmega128' ? 131072 : selectedMCU === 'atmega328p' ? 32768 : 65536);
+    const baseFlashBytes = Math.min(maxFlash, Math.max(2048, locCount * 3.8));
 
     let timeMultiplier = 1.0;
     let sizeMultiplier = 1.0;

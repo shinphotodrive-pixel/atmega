@@ -17,7 +17,7 @@ export interface PortInfo {
   pins: PinDefinition[];
 }
 
-export type SupportedMCU = 'atmega640' | 'atmega128' | 'atmega328p';
+export type SupportedMCU = 'atmega640' | 'atmega128' | 'atmega328p' | 'atmega2560';
 
 export interface MCUProfile {
   id: SupportedMCU;
@@ -464,5 +464,30 @@ export const MCU_PROFILES: Record<SupportedMCU, MCUProfile> = {
       'Optiboot 부트로더 탑재 시 단 512바이트만 점유 (31.5KB 앱 가용 공간)'
     ],
     ports: ATMEGA328P_PORTS
+  },
+  atmega2560: {
+    id: 'atmega2560',
+    name: 'ATmega2560',
+    fullName: 'Microchip ATmega2560-16AU (100-pin TQFP / CBGA)',
+    subtitle: '전 세계 아두이노 메가 2560 정품 표준! 256KB 대용량 플래시 & 86 I/O 플래그십',
+    package: '100-pin TQFP (14x14mm) / 100-ball CBGA',
+    flash: 256,
+    sram: 8,
+    eeprom: 4,
+    io: 86,
+    usart: 4,
+    pwm: 16,
+    adc: 16,
+    timers: '6개 (2x 8-bit Timer0/2, 4x 16-bit Timer1/3/4/5)',
+    maxFreq: '16 MHz (16 MIPS @ 5V)',
+    operatingVoltage: '4.5V ~ 5.5V (16MHz), 1.8V ~ 5.5V (저전압)',
+    tag: 'Arduino Mega 2560 플래그십',
+    keyStrengths: [
+      '256KB 초대형 플래시 메모리 (128K Words, 3바이트 PC 스택, EIND/RAMPZ/ELPM 지원)',
+      '8KB SRAM & 4KB EEPROM 탑재로 FreeRTOS 실시간 OS, 3D 프린터(Marlin) 및 대용량 버퍼 운용 최적화',
+      '4개 독립 하드웨어 고속 USART 채널 + 16채널 10-bit 고정밀 ADC 내장',
+      '외부 메모리 인터페이스(XMEM) 지원으로 최대 64KB 외부 SRAM/주변기기 버스 직접 확장 가능'
+    ],
+    ports: ATMEGA640_PORTS // 100-pin TQFP pinout and ports are 100% pin-compatible with ATmega640/1280
   }
 };

@@ -592,14 +592,14 @@ export const TimerPrescalerCalculator: React.FC<Props> = ({ selectedMCU }) => {
             <div>
               <div className="flex items-center gap-2.5">
                 <h3 className="text-xl font-bold text-white tracking-tight">
-                  Timer/Counter Configuration Wizard
+                  Timer/Counter Configurator
                 </h3>
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                  TCCR / OCR / TCNT Auto Generator
+                  TCNT / OCR / Prescaler Auto Calculator
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                목표 주파수, 원하는 듀티 사이클(Duty Cycle) 및 프리스케일러 분주비를 입력하면 TCCR, OCR, TCNT 레지스터 설정값을 자동으로 연산하고 최적 C 펌웨어 코드를 생성합니다.
+                원하는 목표 주파수와 MCU 클럭(F_CPU)을 입력하면 TCNT 프리로드, OCR 비교값, 프리스케일러(Prescaler) 분주비를 계산하고 C 코드를 생성합니다.
               </p>
             </div>
           </div>

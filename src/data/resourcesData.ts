@@ -1,7 +1,7 @@
 export interface ResourceItem {
   id: string;
   type: 'github' | 'youtube' | 'doc';
-  mcuCategory: 'all' | 'atmega640' | 'atmega128' | 'atmega328p' | 'stm32' | 'pic' | '8051' | 'cross_arch';
+  mcuCategory: 'all' | 'atmega2560' | 'atmega640' | 'atmega128' | 'atmega328p' | 'stm32' | 'pic' | '8051' | 'cross_arch';
   title: string;
   url: string;
   badge: string;
@@ -13,6 +13,88 @@ export interface ResourceItem {
 }
 
 export const RESOURCES: ResourceItem[] = [
+  // ATmega2560 Pinout & Resources
+  {
+    id: 'res-pinout-2560',
+    type: 'doc',
+    mcuCategory: 'atmega2560',
+    title: 'ATmega2560 100-TQFP 풀스펙 하드웨어 핀아웃 다이어그램',
+    url: '/pinout_atmega640.svg',
+    badge: 'Vector Pinout Diagram',
+    category: 'pinout',
+    desc: '아두이노 메가 2560(Mega 2560)과 100-pin TQFP ATmega2560의 86개 I/O, 16개 PWM, 16개 ADC, 4개 USART, SPI, TWI 및 XMEM 외부 메모리 핀아웃 다이어그램입니다.',
+    tag: '2560 핀아웃 다이어그램',
+    starsOrDuration: '100-TQFP Vector SVG',
+    features: ['100핀 TQFP 86개 I/O 라인 총망라', '4개 하드웨어 USART 및 16개 ADC 포트 매핑', '아두이노 메가 핀(D0~D53, A0~A15) 1:1 매칭']
+  },
+  {
+    id: 'res-marlin-2560',
+    type: 'github',
+    mcuCategory: 'atmega2560',
+    title: 'Marlin 3D Printer Firmware (ATmega2560/RAMPS 1.4)',
+    url: 'https://github.com/MarlinFirmware/Marlin',
+    badge: '3D Printer Firmware',
+    category: 'firmware',
+    desc: '전 세계 3D 프린터 산업의 표준 펌웨어. ATmega2560의 256KB 플래시와 5축 모터 제어 타이머/인터럽트, 히팅베드 PID 제어를 극한으로 최적화한 오픈소스 프로젝트입니다.',
+    tag: 'Marlin 3D 프린터 표준',
+    starsOrDuration: '★ 15.2k',
+    features: ['256KB 플래시 풀 메모리 활용', '5축 스텝/디렉션 고속 타이머 ISR', 'RAMPS 1.4 쉴드 및 LCD/SD카드 완벽 연동']
+  },
+  {
+    id: 'res-arduino-mega2560-stk500v2',
+    type: 'github',
+    mcuCategory: 'atmega2560',
+    title: 'Arduino Mega 2560 STK500v2 Bootloader Source',
+    url: 'https://github.com/arduino/ArduinoCore-avr/tree/master/bootloaders/stk500v2',
+    badge: 'Official Bootloader',
+    category: 'bootloader',
+    desc: '256KB 대용량 플래시(128KW)를 위한 3바이트 확장 주소 지정 프로토콜 STK500v2 표준 부트로더 소스 코드입니다.',
+    tag: 'Mega 2560 공식 부트로더',
+    starsOrDuration: '★ 3.4k',
+    features: ['3-byte PC 128KW 어드레싱 지원', '2KB (1024 워드) BLS 공간 점유', 'UART0 115200bps 고속 업로드']
+  },
+
+  // Pighixxx Pinout Diagram Assets
+  {
+    id: 'res-pinout-328p',
+    type: 'doc',
+    mcuCategory: 'atmega328p',
+    title: 'ATmega328P Pighixxx 스타일 공식 하드웨어 핀아웃 다이어그램',
+    url: '/pinout_atmega328p.svg',
+    badge: 'Vector Pinout Diagram',
+    category: 'pinout',
+    desc: '아두이노 우노(Uno)와 28-pin DIP ATmega328P의 디지털/아날로그/PWM/시리얼/포트 배지 및 리셋/전원 라인을 완벽 시각화한 벡터 다이어그램입니다.',
+    tag: '328P 핀아웃 다이어그램',
+    starsOrDuration: '28-DIP Vector SVG',
+    features: ['100% Pighixxx 규격 컬러 코딩 배지', '초고해상도 벡터 SVG 및 2.5x PNG 다운로드 지원', '아두이노 핀 & AVR 물리 포트 1:1 매칭']
+  },
+  {
+    id: 'res-pinout-128',
+    type: 'doc',
+    mcuCategory: 'atmega128',
+    title: 'ATmega128 / 128A 64-TQFP 하드웨어 핀아웃 다이어그램',
+    url: '/pinout_atmega128.svg',
+    badge: 'Vector Pinout Diagram',
+    category: 'pinout',
+    desc: '국내 산업용 제어기 및 실습 표준인 ATmega128의 64핀 TQFP 패키지 전체 핀 기능, PE0(PDI)/PE1(PDO) ISP 배선 주의 및 XMEM 버스 배치 다이어그램입니다.',
+    tag: '128 핀아웃 다이어그램',
+    starsOrDuration: '64-TQFP Vector SVG',
+    features: ['64개 전체 물리 핀 1:1 배치', 'PE0/PE1 ISP 다운로딩 라인 강조', 'Port A~G 53개 I/O 및 ADC/PWM/USART 상세 표기']
+  },
+  {
+    id: 'res-pinout-640',
+    type: 'doc',
+    mcuCategory: 'atmega640',
+    title: 'ATmega640 100-TQFP 대용량 I/O 하드웨어 핀아웃 다이어그램',
+    url: '/pinout_atmega640.svg',
+    badge: 'Vector Pinout Diagram',
+    category: 'pinout',
+    desc: 'ATmega2560과 100% 핀 호환되는 ATmega640 100핀 TQFP 패키지의 86개 I/O, 4개 USART, 16개 ADC, 15개 PWM 및 XMEM 64KB 외부 메모리 버스 다이어그램입니다.',
+    tag: '640 핀아웃 다이어그램',
+    starsOrDuration: '100-TQFP Vector SVG',
+    features: ['100핀 TQFP 86개 I/O 라인 총망라', '4개 하드웨어 USART 및 16개 ADC 포트 매핑', 'SRAM 확장 XMEM 어드레스/데이터 버스 시각화']
+  },
+
   // MegaCore & 640
   {
     id: 'res-megacore',

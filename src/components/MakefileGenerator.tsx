@@ -212,6 +212,18 @@ export const MakefileGenerator: React.FC<Props> = ({ selectedMCU, onSelectMCU })
   // MCU Part mappings for avr-gcc and avrdude
   const mcuConfig = useMemo(() => {
     switch (targetMCU) {
+      case 'atmega2560':
+        return {
+          gccMcu: 'atmega2560',
+          avrdudePart: 'm2560',
+          flashBytes: 262144,
+          sramBytes: 8192,
+          eepromBytes: 4096,
+          defaultBaud: 115200,
+          lfuse: '0xFF',
+          hfuse: '0xD8',
+          efuse: '0xFD'
+        };
       case 'atmega328p':
         return {
           gccMcu: 'atmega328p',
@@ -757,8 +769,8 @@ ${enableEepromHex ? '	@echo "  flash-eeprom : Write $(TARGET_EEP) into AVR EEPRO
           {/* MCU Selector */}
           <div>
             <label className="text-xs text-slate-400 block mb-1 font-medium">타겟 마이크로컨트롤러 (MCU)</label>
-            <div className="grid grid-cols-3 gap-1.5">
-              {(['atmega328p', 'atmega128', 'atmega640'] as SupportedMCU[]).map((mcu) => (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+              {(['atmega2560', 'atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcu) => (
                 <button
                   key={mcu}
                   type="button"

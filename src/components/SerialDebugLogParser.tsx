@@ -57,6 +57,32 @@ export interface DecodedRegisterEvent {
 
 // Built-in Sample Raw Logs per MCU
 const SAMPLE_LOGS: Record<SupportedMCU, { title: string; desc: string; text: string }[]> = {
+  atmega2560: [
+    {
+      title: 'Marlin 3D 프린터 부팅 & 4채널 USART 통신 로그',
+      desc: 'ATmega2560 16MHz 기반 3D 프린터 및 다축 센서 정상 구동 로그',
+      text: `[00:00:00.040] [BOOT] Marlin 2.1.2.4 Firmware Initializing on ATmega2560...
+[00:00:00.045] [POWER] MCUSR=0x01 (PORF Power-On Reset Flag Set)
+[00:00:00.050] [SYS] 256KB Flash Validated. Free SRAM: 5412 Bytes.
+[00:00:00.100] [USART0] USB Host G-code Stream Ready. Baud=115200, UCSR0A=0x20
+[00:00:00.110] [USART1] TFT Touch LCD Controller Connected. Baud=115200, UCSR1A=0x20
+[00:00:00.120] [USART2] Bluetooth Remote Console Ready. Baud=9600, UCSR2A=0x20
+[00:00:00.130] [USART3] Direct Extruder Feedback Sensor Ready. Baud=115200, UCSR3A=0x20
+[00:00:00.200] [SPI] SD Card Slot Initialized. SPCR=0x50 (MSTR=1, SPE=1), SPSR=0x00
+[00:00:00.300] [ADC] Hotend/Bed Thermistor Analog Lines Ready. ADCSRA=0x87, ADMUX=0x40
+[00:00:01.000] [SYSTEM] All 6 Timers & 16 PWM Channels Initialized. Ready for Printing.`
+    },
+    {
+      title: 'UART 버퍼 오버런 & I2C 통신 타임아웃 장애 로그',
+      desc: '고속 G-code 전송 시 USART0 오버런(DOR0) 및 히팅베드 센서 I2C NACK 발생 로그',
+      text: `[00:00:02.100] [PRINT] Streaming high-density circular micro-stepping coordinates...
+[00:00:02.105] [WARN] Main loop processing latency spike: 220us!
+[00:00:02.110] [ERROR] USART0 Buffer Overflow! UCSR0A=0x18 (FE0=0, DOR0=1 OverRun, UPE0=0) UDR0=0x47
+[00:00:02.115] [TWI] Probing Chamber Temperature Sensor @ 0x48...
+[00:00:02.120] [WARN] I2C Bus Error! TWSR=0x20 (SLA+W Transmitted, NACK Received!)
+[00:00:03.000] [WATCHDOG] WDTCSR=0x48 (Watchdog Reset Imminent!)`
+    }
+  ],
   atmega640: [
     {
       title: 'UART Frame Error & TWI NACK 통신 장애 로그',

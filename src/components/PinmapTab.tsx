@@ -3,6 +3,7 @@ import { MCU_PROFILES, SupportedMCU, PinDefinition } from '../data/pinmapData';
 import { Search, Compass, Cpu, Layers, ExternalLink, Filter } from 'lucide-react';
 import { PinMultiplexingConflictChecker } from './PinMultiplexingConflictChecker';
 import { GpioSignalLogicSimulator } from './GpioSignalLogicSimulator';
+import { PinoutDiagramViewer } from './PinoutDiagramViewer';
 
 interface Props {
   selectedMCU: SupportedMCU;
@@ -97,8 +98,8 @@ export const PinmapTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
             핀맵 대상 MCU 전환 (Target MCU)
           </span>
-          <div className="flex gap-2">
-            {(['atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcuId) => (
+          <div className="flex flex-wrap gap-2">
+            {(['atmega2560', 'atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcuId) => (
               <button
                 key={mcuId}
                 onClick={() => {
@@ -160,6 +161,13 @@ export const PinmapTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
           </div>
         )}
       </div>
+
+      {/* Official Pighixxx Hardware Pinout Diagram Visualizer & Image Exporter (ATmega328P, ATmega128, ATmega640) */}
+      <PinoutDiagramViewer
+        selectedMCU={selectedMCU}
+        onSelectMCU={onSelectMCU}
+        onNavigateToPin={handleNavigateToPin}
+      />
 
       {/* Pin Multiplexing Conflict Checker */}
       <PinMultiplexingConflictChecker

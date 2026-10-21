@@ -6,9 +6,12 @@ import { MemoryMapVisualizer } from './MemoryMapVisualizer';
 import { FlashMemoryLayoutVisualizer } from './FlashMemoryLayoutVisualizer';
 import { InterruptLatencyCalculator } from './InterruptLatencyCalculator';
 import { InterruptResponseTimeEstimator } from './InterruptResponseTimeEstimator';
+import { InterruptLatencyEstimator } from './InterruptLatencyEstimator';
+import { InterruptVectorTableExplorer } from './InterruptVectorTableExplorer';
 import { VirtualOscilloscopeOverlay } from './VirtualOscilloscopeOverlay';
 import { InstructionPipelineVisualizer } from './InstructionPipelineVisualizer';
 import { InstructionExecutionTimeProfiler } from './InstructionExecutionTimeProfiler';
+import { InstructionCycleEstimator } from './InstructionCycleEstimator';
 import { VirtualLogicAnalyzer } from './VirtualLogicAnalyzer';
 import { EepromEnduranceEstimator } from './EepromEnduranceEstimator';
 import { EepromDataLoggingLifeCycleSimulator } from './EepromDataLoggingLifeCycleSimulator';
@@ -37,6 +40,23 @@ interface MCUModel {
 }
 
 const MCU_MODELS: MCUModel[] = [
+  {
+    id: 'atmega2560',
+    name: 'ATmega2560',
+    tag: 'Arduino Mega 2560 플래그십',
+    flash: 256,
+    sram: 8,
+    eeprom: 4,
+    io: 86,
+    usart: 4,
+    pwm: 16,
+    adc: 16,
+    package: '100-pin TQFP (14x14mm)',
+    mips: '16 MIPS @ 16MHz',
+    priceIndex: '고용량 플래그십 (대형 프로젝트)',
+    strength: '256KB 초대형 플래시 (128K Words, 3바이트 PC, RAMPZ 지원), 86 I/O, 4 USART, 16 PWM, 3D 프린터(Marlin) 및 대규모 산업 제어 표준',
+    timers: '6개 (2x 8-bit, 4x 16-bit)'
+  },
   {
     id: 'atmega640',
     name: 'ATmega640',
@@ -123,11 +143,11 @@ export const ArchitectureTab: React.FC<Props> = ({
   const activeGpioParams = gpioParams || DEFAULT_GPIO_PARAMS[selectedMCU];
 
   const metricMeta = {
-    flash: { label: 'Flash ROM', unit: 'KB', max: 128, desc: '프로그램 코드 저장 공간 (In-System Self-Programmable)' },
+    flash: { label: 'Flash ROM', unit: 'KB', max: 256, desc: '프로그램 코드 저장 공간 (In-System Self-Programmable)' },
     sram: { label: 'Internal SRAM', unit: 'KB', max: 8, desc: '런타임 전역 변수, 스택, 힙 저장 공간' },
     io: { label: 'General I/O 핀', unit: '개', max: 86, desc: '소프트웨어 제어 가능한 물리 디지털/아날로그 입출력 핀' },
     usart: { label: '하드웨어 USART', unit: '채널', max: 4, desc: '전이중(Full Duplex) 비동기 시리얼 통신 포트' },
-    pwm: { label: 'PWM 채널 수', unit: '채널', max: 15, desc: '모터 속도 및 LED 디밍 제어용 펄스 폭 변조 채널' },
+    pwm: { label: 'PWM 채널 수', unit: '채널', max: 16, desc: '모터 속도 및 LED 디밍 제어용 펄스 폭 변조 채널' },
     adc: { label: '10비트 ADC', unit: '채널', max: 16, desc: '10비트 고분해능 아날로그 입력 채널 (차동 200배 게인 포함)' }
   };
 
@@ -145,7 +165,7 @@ export const ArchitectureTab: React.FC<Props> = ({
             현재 집중 분석: <strong className="text-white underline">{currentProfile.name}</strong>
           </span>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {MCU_MODELS.map((mcu) => {
             const isSelected = selectedMCU === mcu.id;
             return (
@@ -426,8 +446,14 @@ export const ArchitectureTab: React.FC<Props> = ({
       {/* Flash Memory Layout Visualizer (User Segments, Bootloader, Application Data & Address Scale) */}
       <FlashMemoryLayoutVisualizer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
 
+      {/* Interrupt Vector Table Reference & Template C ISR Code Generator */}
+      <InterruptVectorTableExplorer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
       {/* Interrupt Latency Calculator (Worst-Case Cycles & Nesting Overhead) */}
       <InterruptLatencyCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Interrupt Latency Estimator (Entry & Exit Clock Cycles, Vector Table & Instruction Set Overhead) */}
+      <InterruptLatencyEstimator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
 
       {/* Interrupt Response Time Estimator (CPU Frequency, Instruction Count & Nested ISR Max Latency) */}
       <InterruptResponseTimeEstimator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
@@ -437,6 +463,9 @@ export const ArchitectureTab: React.FC<Props> = ({
 
       {/* Instruction Execution Time Profiler (Cycle & Nanosecond Latency Analyzer for C & Assembly) */}
       <InstructionExecutionTimeProfiler selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Instruction Cycle Estimator (Sequence of AVR Assembly Operations to Calculate Clock Cycles & Execution Time) */}
+      <InstructionCycleEstimator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
 
       {/* EEPROM Endurance Estimator (Write Frequency & Silicon Wear Calculator) */}
       <EepromEnduranceEstimator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />

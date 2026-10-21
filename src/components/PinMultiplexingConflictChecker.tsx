@@ -425,6 +425,9 @@ export const MCU_PERIPHERALS: PeripheralCatalogByMCU = {
   ]
 };
 
+// ATmega2560 shares 100% pin-compatible 100-pin TQFP pinout and peripherals with ATmega640
+MCU_PERIPHERALS.atmega2560 = MCU_PERIPHERALS.atmega640;
+
 // Preset configurations for user convenience
 interface ConflictPreset {
   id: string;
@@ -435,6 +438,13 @@ interface ConflictPreset {
 }
 
 export const CONFLICT_PRESETS: ConflictPreset[] = [
+  {
+    id: 'mega2560_spi_pwm_usart',
+    name: 'Arduino Mega 2560: SPI (D50~53) + 4채널 멀티 USART + 고밀도 Timer PWM 동시 구동',
+    description: 'PB0~PB3 (SPI SS/SCK/MOSI/MISO) 및 PB4/PB7 (Timer0/1 PWM OC0A/OC1C) 핀 충돌과 JTAG/ADC PF4~7 경합 상태를 종합 검사합니다.',
+    targetMCU: 'atmega2560',
+    enabledPeripherals: ['spi_master', 'usart0', 'usart1', 'usart2', 'timer0_pwm', 'timer1_pwm', 'jtag_interface', 'adc_group1']
+  },
   {
     id: 'uno_spi_timer',
     name: 'Arduino Uno: SPI Master + Timer1 & Timer2 PWM 동시 활성화 (고전적 핀 충돌)',

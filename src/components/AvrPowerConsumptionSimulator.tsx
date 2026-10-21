@@ -39,7 +39,7 @@ interface PeripheralItem {
   description: string;
 }
 
-export const AvrPowerConsumptionSimulator: React.FC<Props> = ({ selectedMCU }) => {
+export const AvrPowerConsumptionSimulator: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
   const currentProfile = MCU_PROFILES[selectedMCU];
 
   // System Operating Parameters
@@ -143,7 +143,7 @@ export const AvrPowerConsumptionSimulator: React.FC<Props> = ({ selectedMCU }) =
       }
     ];
 
-    if (selectedMCU === 'atmega128' || selectedMCU === 'atmega640') {
+    if (selectedMCU === 'atmega128' || selectedMCU === 'atmega640' || selectedMCU === 'atmega2560') {
       list.push(
         {
           id: 'usart1',
@@ -162,6 +162,47 @@ export const AvrPowerConsumptionSimulator: React.FC<Props> = ({ selectedMCU }) =
           prrRegister: 'PRR1',
           prrBit: 'PRTIM3',
           description: '추가 16비트 PWM 채널'
+        }
+      );
+    }
+
+    if (selectedMCU === 'atmega640' || selectedMCU === 'atmega2560') {
+      list.push(
+        {
+          id: 'usart2',
+          name: 'USART2 (세 번째 시리얼 포트)',
+          category: 'comm',
+          baseCurrentUa: 180,
+          prrRegister: 'PRR1',
+          prrBit: 'PRUSART2',
+          description: '3번째 독립 하드웨어 고속 시리얼 채널'
+        },
+        {
+          id: 'usart3',
+          name: 'USART3 (네 번째 시리얼 포트)',
+          category: 'comm',
+          baseCurrentUa: 180,
+          prrRegister: 'PRR1',
+          prrBit: 'PRUSART3',
+          description: '4번째 독립 하드웨어 고속 시리얼 채널'
+        },
+        {
+          id: 'timer4',
+          name: 'Timer/Counter4 (16-bit 고정밀 서보 PWM)',
+          category: 'timer',
+          baseCurrentUa: 140,
+          prrRegister: 'PRR1',
+          prrBit: 'PRTIM4',
+          description: '추가 16비트 타이머 4'
+        },
+        {
+          id: 'timer5',
+          name: 'Timer/Counter5 (16-bit 고정밀 서보 PWM)',
+          category: 'timer',
+          baseCurrentUa: 140,
+          prrRegister: 'PRR1',
+          prrBit: 'PRTIM5',
+          description: '추가 16비트 타이머 5'
         }
       );
     }
@@ -379,14 +420,33 @@ void enter_deep_sleep(void) {
           </p>
         </div>
 
-        {/* Copy Action */}
-        <button
-          onClick={copyCode}
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition shadow-lg shadow-emerald-500/20 shrink-0"
-        >
-          {copiedCode ? <Check className="w-4 h-4 text-emerald-950" /> : <Copy className="w-4 h-4" />}
-          <span>{copiedCode ? 'PRR 코드 복사 완료' : '저전력 C 코드 복사'}</span>
-        </button>
+        {/* Actions & MCU Selector */}
+        <div className="flex flex-wrap items-center gap-2">
+          {onSelectMCU && (
+            <div className="flex flex-wrap bg-slate-950 p-1 rounded-xl border border-slate-800">
+              {(['atmega2560', 'atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcuId) => (
+                <button
+                  key={mcuId}
+                  onClick={() => onSelectMCU(mcuId)}
+                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition-all ${
+                    selectedMCU === mcuId
+                      ? 'bg-emerald-500 text-slate-950 shadow'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {MCU_PROFILES[mcuId].name}
+                </button>
+              ))}
+            </div>
+          )}
+          <button
+            onClick={copyCode}
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition shadow-lg shadow-emerald-500/20 shrink-0"
+          >
+            {copiedCode ? <Check className="w-4 h-4 text-emerald-950" /> : <Copy className="w-4 h-4" />}
+            <span>{copiedCode ? 'PRR 코드 복사 완료' : '저전력 C 코드 복사'}</span>
+          </button>
+        </div>
       </div>
 
       {/* Metrics Dashboard Cards */}

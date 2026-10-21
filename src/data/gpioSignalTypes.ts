@@ -57,5 +57,19 @@ export const DEFAULT_GPIO_PARAMS: Record<SupportedMCU, GpioSignalParams> = {
     ringingEnabled: true,
     sourceMode: 'gpio_toggle',
     description: 'D13 (PB5) 고속 토글 루프 (PINB = 0x20 하드웨어 토글)'
+  },
+  atmega2560: {
+    mcu: 'atmega2560',
+    pinName: 'PB7 (Arduino D13 LED / OC0A / OC1C)',
+    pinPort: 'PORTB7',
+    frequencyHz: 50000, // 50 kHz
+    dutyCyclePct: 50,
+    voltageLevel: 5.0,
+    noiseMv: 55,
+    jitterNs: 30,
+    slewRateVPerUs: 85,
+    ringingEnabled: true,
+    sourceMode: 'timer_pwm',
+    description: 'Arduino Mega 2560 빌트인 LED (PB7) & Timer1 Fast PWM 출력'
   }
 };

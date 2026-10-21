@@ -200,6 +200,12 @@ export const UartBaudRateErrorCalculator: React.FC<Props> = ({ selectedMCU }) =>
 
   // Channel pin names
   const channelPinMap: Record<SupportedMCU, string[]> = {
+    atmega2560: [
+      'RXD0: PE0 (Pin 2), TXD0: PE1 (Pin 3)',
+      'RXD1: PD2 (Pin 45), TXD1: PD3 (Pin 46)',
+      'RXD2: PH0 (Pin 12), TXD2: PH1 (Pin 13)',
+      'RXD3: PJ0 (Pin 63), TXD3: PJ1 (Pin 64)'
+    ],
     atmega328p: ['RXD0: PD0 (Pin 2), TXD0: PD1 (Pin 3)'],
     atmega128: [
       'RXD0: PE0 (Pin 2), TXD0: PE1 (Pin 3)',

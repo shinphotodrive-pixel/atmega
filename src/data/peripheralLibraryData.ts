@@ -40,7 +40,7 @@ export const PERIPHERAL_DRIVERS: PeripheralDriver[] = [
     categoryLabel: 'USART / Serial',
     paradigm: 'ISR Ring-Buffer',
     license: 'MIT',
-    supportedMcus: ['atmega640', 'atmega128', 'atmega328p'],
+    supportedMcus: ['atmega2560', 'atmega640', 'atmega128', 'atmega328p'],
     flashBytes: 684,
     sramBytes: 136,
     registersUsed: ['UBRRn', 'UCSRnA', 'UCSRnB', 'UCSRnC', 'UDRn'],
@@ -50,7 +50,7 @@ export const PERIPHERAL_DRIVERS: PeripheralDriver[] = [
       'Circular FIFO buffer (64-byte RX / 64-byte TX power-of-two mask optimization)',
       'Double-speed (U2X) baud rate auto-calculation with <1.5% clock tolerance',
       'Standard stdio.h stdout/stdin integration with fdev_setup_stream()',
-      'Supports USART0 on 328P, USART0/1 on ATmega128, and USART0/1/2/3 on ATmega640',
+      'Supports USART0 on 328P, USART0/1 on ATmega128, and USART0/1/2/3 on ATmega640/2560',
       'Atomic buffer head/tail index advancement without disabling global interrupts'
     ],
     apiFunctions: [
@@ -112,7 +112,7 @@ void uart_setup_stdout(uint8_t channel);
 #endif /* UART_DRIVER_H_ */
 `,
     sourceCode: (mcu) => {
-      const is640 = mcu === 'atmega640';
+      const is640 = mcu === 'atmega640' || mcu === 'atmega2560';
       const is128 = mcu === 'atmega128';
       return `/**
  * @file uart_driver.c
@@ -145,7 +145,7 @@ void uart_init(uint8_t channel, uint32_t baud, bool double_speed) {
     ubrr_val = (uint16_t)((F_CPU / (16UL * baud)) - 1UL);
   }
 
-#if defined(__AVR_ATmega640__) || defined(__AVR_ATmega128__) || defined(__AVR_ATmega328P__)
+#if defined(__AVR_ATmega2560__) || defined(__AVR_ATmega640__) || defined(__AVR_ATmega128__) || defined(__AVR_ATmega328P__)
   if (channel == 0) {
     UBRR0H = (uint8_t)(ubrr_val >> 8);
     UBRR0L = (uint8_t)(ubrr_val & 0xFF);
@@ -350,7 +350,7 @@ void timer1_pwm_init(uint16_t top_counts, uint8_t prescaler) {
   // Set OC1A and OC1B as outputs
 #if defined(__AVR_ATmega328P__)
   DDRB |= (1 << DDB1) | (1 << DDB2); // PB1 (OC1A), PB2 (OC1B)
-#elif defined(__AVR_ATmega128__) || defined(__AVR_ATmega640__)
+#elif defined(__AVR_ATmega128__) || defined(__AVR_ATmega640__) || defined(__AVR_ATmega2560__)
   DDRB |= (1 << DDB5) | (1 << DDB6); // PB5 (OC1A), PB6 (OC1B)
 #endif
 
@@ -417,7 +417,7 @@ int main(void) {
     categoryLabel: 'I2C / TWI Bus',
     paradigm: 'Defensive / Safe',
     license: 'BSD-3-Clause',
-    supportedMcus: ['atmega640', 'atmega128', 'atmega328p'],
+    supportedMcus: ['atmega2560', 'atmega640', 'atmega128', 'atmega328p'],
     flashBytes: 520,
     sramBytes: 8,
     registersUsed: ['TWBR', 'TWSR', 'TWCR', 'TWDR'],
@@ -614,7 +614,7 @@ int main(void) {
     categoryLabel: 'SPI Bus',
     paradigm: 'Bare-Metal',
     license: 'MIT',
-    supportedMcus: ['atmega640', 'atmega128', 'atmega328p'],
+    supportedMcus: ['atmega2560', 'atmega640', 'atmega128', 'atmega328p'],
     flashBytes: 310,
     sramBytes: 4,
     registersUsed: ['SPCR', 'SPSR', 'SPDR', 'DDRB'],
@@ -737,7 +737,7 @@ int main(void) {
     categoryLabel: 'ADC / Analog',
     paradigm: 'Bare-Metal',
     license: 'MIT',
-    supportedMcus: ['atmega640', 'atmega128', 'atmega328p'],
+    supportedMcus: ['atmega2560', 'atmega640', 'atmega128', 'atmega328p'],
     flashBytes: 388,
     sramBytes: 6,
     registersUsed: ['ADMUX', 'ADCSRA', 'ADCSRB', 'DIDR0', 'ADCH', 'ADCL'],
@@ -863,7 +863,7 @@ int main(void) {
     categoryLabel: 'EEPROM Non-Volatile',
     paradigm: 'Defensive / Safe',
     license: 'MIT',
-    supportedMcus: ['atmega640', 'atmega128', 'atmega328p'],
+    supportedMcus: ['atmega2560', 'atmega640', 'atmega128', 'atmega328p'],
     flashBytes: 420,
     sramBytes: 16,
     registersUsed: ['EECR', 'EEDR', 'EEARH', 'EEARL'],
@@ -1004,7 +1004,7 @@ int main(void) {
     categoryLabel: 'Power & Sleep / WDT',
     paradigm: 'Defensive / Safe',
     license: 'MIT',
-    supportedMcus: ['atmega640', 'atmega128', 'atmega328p'],
+    supportedMcus: ['atmega2560', 'atmega640', 'atmega128', 'atmega328p'],
     flashBytes: 280,
     sramBytes: 2,
     registersUsed: ['WDTCSR', 'SMCR', 'PRR', 'MCUSR'],
@@ -1128,7 +1128,7 @@ int main(void) {
     categoryLabel: 'GPIO / External Interrupt',
     paradigm: 'Bare-Metal',
     license: 'MIT',
-    supportedMcus: ['atmega640', 'atmega128', 'atmega328p'],
+    supportedMcus: ['atmega2560', 'atmega640', 'atmega128', 'atmega328p'],
     flashBytes: 340,
     sramBytes: 10,
     registersUsed: ['EICRA', 'EIMSK', 'EIFR'],
@@ -1239,7 +1239,7 @@ int main(void) {
     categoryLabel: 'RTC / Sensor',
     paradigm: 'Modular HAL',
     license: 'MIT',
-    supportedMcus: ['atmega640', 'atmega128', 'atmega328p'],
+    supportedMcus: ['atmega2560', 'atmega640', 'atmega128', 'atmega328p'],
     flashBytes: 560,
     sramBytes: 14,
     registersUsed: ['TWDR', 'TWCR'],
@@ -1375,7 +1375,7 @@ int main(void) {
 ];
 
 export function generateMakefileForDrivers(selectedMcu: SupportedMCU, selectedDrivers: PeripheralDriver[]): string {
-  const mcuFlag = selectedMcu === 'atmega640' ? 'atmega640' : selectedMcu === 'atmega128' ? 'atmega128' : 'atmega328p';
+  const mcuFlag = selectedMcu === 'atmega2560' ? 'atmega2560' : selectedMcu === 'atmega640' ? 'atmega640' : selectedMcu === 'atmega128' ? 'atmega128' : 'atmega328p';
   const programmer = selectedMcu === 'atmega328p' ? 'arduino -b 115200' : 'wiring -b 115200';
   const cFiles = ['src/main.c', ...selectedDrivers.map(d => `src/${d.sourceFileName}`)].join(' \\\n       ');
 
@@ -1429,7 +1429,7 @@ clean:
 }
 
 export function generateCMakeListsForDrivers(selectedMcu: SupportedMCU, selectedDrivers: PeripheralDriver[]): string {
-  const mcuFlag = selectedMcu === 'atmega640' ? 'atmega640' : selectedMcu === 'atmega128' ? 'atmega128' : 'atmega328p';
+  const mcuFlag = selectedMcu === 'atmega2560' ? 'atmega2560' : selectedMcu === 'atmega640' ? 'atmega640' : selectedMcu === 'atmega128' ? 'atmega128' : 'atmega328p';
   const sources = ['src/main.c', ...selectedDrivers.map(d => `src/${d.sourceFileName}`)].join('\n    ');
 
   return `cmake_minimum_required(VERSION 3.15)

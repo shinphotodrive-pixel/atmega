@@ -937,8 +937,8 @@ export const ATMEGA640_VECTORS: InterruptVector[] = [
   }
 ];
 
-export const getVectorTableByMCU = (mcu: 'atmega640' | 'atmega128' | 'atmega328p'): InterruptVector[] => {
+export const getVectorTableByMCU = (mcu: 'atmega640' | 'atmega128' | 'atmega328p' | 'atmega2560'): InterruptVector[] => {
   if (mcu === 'atmega328p') return ATMEGA328P_VECTORS;
   if (mcu === 'atmega128') return ATMEGA128_VECTORS;
-  return ATMEGA640_VECTORS;
+  return ATMEGA640_VECTORS; // ATmega640 and ATmega2560 share identical 57-vector IVT mapping
 };

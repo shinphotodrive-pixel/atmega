@@ -120,7 +120,7 @@ export const MemoryMapVisualizer: React.FC<MemoryMapVisualizerProps> = ({
     if (selectedMCU === 'atmega128') {
       ivtVectors = 35;
       ivtSizeBytes = 140; // 35 * 4 bytes
-    } else if (selectedMCU === 'atmega640') {
+    } else if (selectedMCU === 'atmega640' || selectedMCU === 'atmega2560') {
       ivtVectors = 57;
       ivtSizeBytes = 228; // 57 * 4 bytes
     }
@@ -184,7 +184,7 @@ export const MemoryMapVisualizer: React.FC<MemoryMapVisualizerProps> = ({
     // 2. DATA MEMORY (SRAM & I/O & RESERVED BUS)
     const gpRegsSize = 32;       // 0x0000 - 0x001F
     const stdIoSize = 64;        // 0x0020 - 0x005F
-    const extIoSize = selectedMCU === 'atmega640' ? 416 : 160; // mega640: 0x0060-0x01FF (416B), mega128/328: 0x0060-0x00FF (160B)
+    const extIoSize = (selectedMCU === 'atmega640' || selectedMCU === 'atmega2560') ? 416 : 160; // mega640/2560: 0x0060-0x01FF (416B), mega128/328: 0x0060-0x00FF (160B)
     const sramStartAddr = gpRegsSize + stdIoSize + extIoSize;
     const sramEndAddr = sramStartAddr + sramTotalBytes - 1;
 
@@ -538,8 +538,8 @@ MEMORY
         {/* Action Controls & Format Switch */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Target MCU switcher pills */}
-          <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
-            {(['atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcu) => (
+          <div className="flex flex-wrap items-center bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+            {(['atmega2560', 'atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcu) => (
               <button
                 key={mcu}
                 onClick={() => onSelectMCU && onSelectMCU(mcu)}
@@ -549,7 +549,7 @@ MEMORY
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                {mcu === 'atmega640' ? 'mega640' : mcu === 'atmega128' ? 'mega128' : 'mega328P'}
+                {mcu === 'atmega2560' ? 'mega2560' : mcu === 'atmega640' ? 'mega640' : mcu === 'atmega128' ? 'mega128' : 'mega328P'}
               </button>
             ))}
           </div>

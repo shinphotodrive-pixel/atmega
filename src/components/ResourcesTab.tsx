@@ -22,6 +22,19 @@ import { CommunicationProtocolFrameAnalyzer } from './CommunicationProtocolFrame
 import { AvrWatchdogTuningGuide } from './AvrWatchdogTuningGuide';
 import { InstructionExecutionTimeProfiler } from './InstructionExecutionTimeProfiler';
 import { AvrLowPowerBatteryLifeCalculator } from './AvrLowPowerBatteryLifeCalculator';
+import { I2cSpiSequenceDesigner } from './I2cSpiSequenceDesigner';
+import { AdcNoisePrecisionAnalyzer } from './AdcNoisePrecisionAnalyzer';
+import { AvrBootloaderProfiler } from './AvrBootloaderProfiler';
+import { AvrCommProtocolDebugger } from './AvrCommProtocolDebugger';
+import { AvrHardwarePeripheralInterconnectSimulator } from './AvrHardwarePeripheralInterconnectSimulator';
+import { AvrHighSpeedEmiGuide } from './AvrHighSpeedEmiGuide';
+import { AvrXmemDmaFlowVisualizer } from './AvrXmemDmaFlowVisualizer';
+import { AvrLowPowerEnergyProfiler } from './AvrLowPowerEnergyProfiler';
+import { AvrWdtSurvivabilityAnalyzer } from './AvrWdtSurvivabilityAnalyzer';
+import { InterfaceProtocolConfigurator } from './InterfaceProtocolConfigurator';
+import { MemoryMapExplorer } from './MemoryMapExplorer';
+import { BootloaderSizeCalculator } from './BootloaderSizeCalculator';
+import { ErrataTracker } from './ErrataTracker';
 
 interface Props {
   selectedMCU: SupportedMCU;
@@ -61,7 +74,7 @@ export const ResourcesTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
               <BookOpen className="w-3.5 h-3.5" /> Curated Open Source & Engineering Media
             </div>
             <h2 className="text-xl md:text-2xl font-bold text-white tracking-tight">
-              ATmega640 / ATmega128 / ATmega328P 오픈소스 & YouTube 강좌 허브
+              ATmega2560 / ATmega640 / ATmega128 / ATmega328P 오픈소스 & YouTube 강좌 허브
             </h2>
             <p className="text-sm text-slate-400 mt-1 max-w-3xl leading-relaxed">
               검증된 부트로더(MegaCore, MiniCore, Optiboot), 베어메탈 드라이버 컬렉션,
@@ -131,6 +144,45 @@ export const ResourcesTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
       {/* AVR Low-Power Mode Battery Life Calculator & Standby Transition Optimizer */}
       <AvrLowPowerBatteryLifeCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
 
+      {/* I2C / SPI Communication Sequence Designer & Timing Diagram Optimizer */}
+      <I2cSpiSequenceDesigner selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* ADC Noise & Precision Analyzer (Oversampling & ENOB Simulator) */}
+      <AdcNoisePrecisionAnalyzer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* AVR Bootloader Profiler (Optiboot vs Arduino vs Custom 3-Way Comparative Profiler) */}
+      <AvrBootloaderProfiler selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* AVR Communication Protocol Debugger (I2C/SPI Register Linkage & Bus Arbitration Simulator) */}
+      <AvrCommProtocolDebugger selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* AVR Hardware Peripheral Interconnect Simulator (Event Routing & Lockup Diagnostics) */}
+      <AvrHardwarePeripheralInterconnectSimulator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* AVR High-Speed EMI Mitigation & PCB Signal Integrity Guide */}
+      <AvrHighSpeedEmiGuide selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* AVR External Memory Interface (XMEM) & DMA Data Flow Visualizer */}
+      <AvrXmemDmaFlowVisualizer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* AVR Multi-Phase Low-Power Mode Energy Profiler (Idle, Standby, Power-down) */}
+      <AvrLowPowerEnergyProfiler selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* AVR Hardware Watchdog (WDT) Survivability & Anti-Reset-Loop Analyzer */}
+      <AvrWdtSurvivabilityAnalyzer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Interface Protocol Configurator (USART Baud Rate UBRR, I2C TWI Frequency & SPI Divisor Settings) */}
+      <InterfaceProtocolConfigurator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Memory Map Explorer (Flash vs. SRAM Dynamic Allocation & Interactive Section Inspector) */}
+      <MemoryMapExplorer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Bootloader Size Calculator (Optiboot, ArduinoISP & Remaining User Application Flash Memory Space) */}
+      <BootloaderSizeCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Errata Tracker (MCU Silicon Issues, ADC Noise & USART Buffer Overrun Known Workarounds) */}
+      <ErrataTracker selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
       {/* Filter and Search Bar */}
       <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 backdrop-blur shadow-lg space-y-4">
         <div className="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4">
@@ -148,6 +200,16 @@ export const ResourcesTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
               }`}
             >
               전체 MCU
+            </button>
+            <button
+              onClick={() => setMcuFilter('atmega2560')}
+              className={`px-3 py-1 text-xs font-semibold rounded-xl transition-all border ${
+                mcuFilter === 'atmega2560'
+                  ? 'bg-purple-600 text-white font-bold border-purple-500 shadow-md shadow-purple-600/20'
+                  : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+              }`}
+            >
+              ATmega2560 전용
             </button>
             <button
               onClick={() => setMcuFilter('atmega640')}

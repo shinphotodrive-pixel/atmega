@@ -249,6 +249,8 @@ export const CompilerOutputSizeProfiler: React.FC<Props> = ({ selectedMCU }) => 
   // Flash & SRAM limits for selected MCU
   const mcuLimits = useMemo(() => {
     switch (selectedMCU) {
+      case 'atmega2560':
+        return { flash: 262144, sram: 8192, eeprom: 4096 };
       case 'atmega328p':
         return { flash: 32768, sram: 2048, eeprom: 1024 };
       case 'atmega128':

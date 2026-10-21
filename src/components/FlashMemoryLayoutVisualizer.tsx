@@ -114,6 +114,21 @@ const MCU_FLASH_SPECS: Record<SupportedMCU, MCUFlashSpec> = {
       { sizeBytes: 4096, label: '4096 Bytes (2048 Words) - 4KB 산업용 콘솔 부트로더', fuseBits: 'BOOTSZ=01, BOOTRST=0', bootResetWordAddr: 0x7800, bootResetByteAddr: 0xF000 },
       { sizeBytes: 8192, label: '8192 Bytes (4096 Words) - 8KB CAN/Modbus 복합 부트로더', fuseBits: 'BOOTSZ=00, BOOTRST=0', bootResetWordAddr: 0x7000, bootResetByteAddr: 0xE000 }
     ]
+  },
+  atmega2560: {
+    totalBytes: 256 * 1024, // 262,144 Bytes (131,072 Words)
+    pageSizeBytes: 256,     // 128 Words
+    pageCount: 1024,
+    vectorSizeBytes: 228,   // 57 vectors * 4 bytes
+    vectorCount: 57,
+    defaultBootloaderBytes: 2048, // 2KB default (STK500v2 Mega 2560)
+    bootloaderOptions: [
+      { sizeBytes: 0, label: '부트로더 미사용 (0B / 전체 플래시 앱 전용)', fuseBits: 'BOOTRST=1 (Unprogrammed)', bootResetWordAddr: 0x0000, bootResetByteAddr: 0x0000 },
+      { sizeBytes: 1024, label: '1024 Bytes (512 Words) - 1KB 최소형 Optiboot', fuseBits: 'BOOTSZ=11, BOOTRST=0', bootResetWordAddr: 0x1FE00, bootResetByteAddr: 0x3FC00 },
+      { sizeBytes: 2048, label: '2048 Bytes (1024 Words) - 2KB Arduino Mega 2560 STK500v2 기본', fuseBits: 'BOOTSZ=10, BOOTRST=0', bootResetWordAddr: 0x1FC00, bootResetByteAddr: 0x3F800 },
+      { sizeBytes: 4096, label: '4096 Bytes (2048 Words) - 4KB STK500v2 확장 부트로더', fuseBits: 'BOOTSZ=01, BOOTRST=0', bootResetWordAddr: 0x1F800, bootResetByteAddr: 0x3F000 },
+      { sizeBytes: 8192, label: '8192 Bytes (4096 Words) - 8KB 네트워크/SD 복합 부트로더', fuseBits: 'BOOTSZ=00, BOOTRST=0', bootResetWordAddr: 0x1F000, bootResetByteAddr: 0x3E000 }
+    ]
   }
 };
 
@@ -746,7 +761,7 @@ uint8_t read_custom_flash_byte(uint16_t addr) {
     // 4. PlatformIO / Makefile configuration
     const pioConfig = `[env:${selectedMCU}]
 platform = atmelavr
-board = ${selectedMCU === 'atmega328p' ? 'uno' : selectedMCU === 'atmega128' ? 'mega128' : 'mega640'}
+board = ${selectedMCU === 'atmega328p' ? 'uno' : selectedMCU === 'atmega128' ? 'mega128' : selectedMCU === 'atmega2560' ? 'megaatmega2560' : 'mega640'}
 framework = arduino
 
 ; Flash Memory Layout Linker Flags
@@ -838,7 +853,7 @@ ${allActiveSegments
           {/* Quick MCU Switch if prop provided */}
           {onSelectMCU && (
             <div className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800 text-xs">
-              {(['atmega328p', 'atmega128', 'atmega640'] as SupportedMCU[]).map(mcu => (
+              {(['atmega2560', 'atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map(mcu => (
                 <button
                   key={mcu}
                   onClick={() => onSelectMCU(mcu)}
@@ -848,7 +863,7 @@ ${allActiveSegments
                       : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  {mcu === 'atmega328p' ? '328P (32K)' : mcu === 'atmega128' ? 'M128 (128K)' : 'M640 (64K)'}
+                  {mcu === 'atmega2560' ? 'M2560 (256K)' : mcu === 'atmega328p' ? '328P (32K)' : mcu === 'atmega128' ? 'M128 (128K)' : 'M640 (64K)'}
                 </button>
               ))}
             </div>

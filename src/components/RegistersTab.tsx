@@ -6,6 +6,7 @@ import { CommTimingCalculator } from './CommTimingCalculator';
 import { AdcSamplingNoiseCalculator } from './AdcSamplingNoiseCalculator';
 import { AdcNoiseResolutionSimulator } from './AdcNoiseResolutionSimulator';
 import { InterruptVectorTableExplorer } from './InterruptVectorTableExplorer';
+import { AvrInterruptLatencyAnalyzer } from './AvrInterruptLatencyAnalyzer';
 import { CodeSnippetGenerator } from './CodeSnippetGenerator';
 import { BuildSystemGenerator } from './BuildSystemGenerator';
 import { RegisterStatusDashboard } from './RegisterStatusDashboard';
@@ -20,6 +21,7 @@ import { EepromDataVisualizer } from './EepromDataVisualizer';
 import { FirmwareUnitTestGenerator } from './FirmwareUnitTestGenerator';
 import { HardwareDebuggerConfigurator } from './HardwareDebuggerConfigurator';
 import { SfrRegisterDifferential } from './SfrRegisterDifferential';
+import { RegisterDiffTool } from './RegisterDiffTool';
 import { LiveRegisterWatcher } from './LiveRegisterWatcher';
 import { GpioTogglingConfigurator } from './GpioTogglingConfigurator';
 import { TimerPrescalerCalculator } from './TimerPrescalerCalculator';
@@ -218,8 +220,8 @@ void Write_OCR1A_Atomic(uint16_t val) {
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
             SFR 계산 대상 MCU
           </span>
-          <div className="flex gap-2">
-            {(['atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcuId) => (
+          <div className="flex flex-wrap gap-2">
+            {(['atmega2560', 'atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcuId) => (
               <button
                 key={mcuId}
                 onClick={() => onSelectMCU(mcuId)}
@@ -276,6 +278,9 @@ void Write_OCR1A_Atomic(uint16_t val) {
       {/* C Register Initialization Code Generator (Clean Bitwise Shift Macros & Atomic Blocks) */}
       <RegisterCodeSnippetGenerator selectedMCU={selectedMCU} />
 
+      {/* Register Diff Tool (Cross-MCU Address & Bit-Field Discrepancy Visualizer) */}
+      <RegisterDiffTool selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
       {/* SFR Register Differential Tool (Cross-MCU Mapping & Migration Hurdles) */}
       <SfrRegisterDifferential selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
 
@@ -322,6 +327,9 @@ void Write_OCR1A_Atomic(uint16_t val) {
 
       {/* Interrupt Vector Table Explorer */}
       <InterruptVectorTableExplorer selectedMCU={selectedMCU} />
+
+      {/* Interrupt Latency Analyzer (ISR Entry/Exit Clock Cycles & Context Saving Overhead) */}
+      <AvrInterruptLatencyAnalyzer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
 
       {/* Complete BSP C Code Snippet Generator */}
       <CodeSnippetGenerator selectedMCU={selectedMCU} />

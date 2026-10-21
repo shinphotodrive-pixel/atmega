@@ -6,6 +6,7 @@ import { FirmwareCrcIntegrityCalculator } from './FirmwareCrcIntegrityCalculator
 import { SerialProtocolDataLogger } from './SerialProtocolDataLogger';
 import { TimerCounterSimulator } from './TimerCounterSimulator';
 import { OptibootBuildConfigurator } from './OptibootBuildConfigurator';
+import { BootloaderSelectorConfig } from './BootloaderSelectorConfig';
 import {
   Download,
   Terminal,
@@ -347,6 +348,22 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         jtagPins: 'Pin 90~93 (PF4~PF7: TCK, TMS, TDO, TDI)',
         warning: '💡 ATmega640 100핀 모델은 ISP(PB1~3) 외에도 10핀 JTAG 포트(PF4~7)를 통한 초고속 플래싱 및 Atmel-ICE 하드웨어 온칩 실시간 디버깅을 지원합니다.'
       };
+    } else if (selectedMCU === 'atmega2560') {
+      return {
+        mcuName: 'ATmega2560 (100-pin TQFP / Arduino Mega 2560)',
+        flashSize: '256 KB (Page: 256 바이트 / 1024 Pages)',
+        signature: '0x1E 0x98 0x01',
+        resetPin: 'Pin 30 (/RESET)',
+        sckPin: 'Pin 20 (PB1 / SCK / Arduino D52)',
+        mosiPin: 'Pin 21 (PB2 / MOSI / Arduino D51)',
+        misoPin: 'Pin 22 (PB3 / MISO / Arduino D50)',
+        vccPin: 'Pin 10, 31, 61, 80 (VCC 5V)',
+        gndPin: 'Pin 11, 32, 62, 81 (GND)',
+        uartRx: 'Pin 2 (PE0 / RXD0 / Arduino D0)',
+        uartTx: 'Pin 3 (PE1 / TXD0 / Arduino D1)',
+        jtagPins: 'Pin 90~93 (PF4~PF7: TCK, TMS, TDO, TDI)',
+        warning: '💡 ATmega2560은 256KB 대용량 플래시(128K Words)를 갖추고 있어 avrdude에서 -p m2560 플래그로 64KW 이상의 확장 주소(RAMPZ/EIND)를 지원하는 STK500v2 또는 Wiring 부트로더(115200bps)를 사용합니다.'
+      };
     } else {
       return {
         mcuName: 'ATmega328P (28-pin DIP / 32-pin TQFP)',
@@ -371,7 +388,8 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
     let cmd = 'avrdude';
 
     // 1. MCU Target Part
-    cmd += ` -p ${selectedMCU}`;
+    const mcuPart = selectedMCU === 'atmega2560' ? 'm2560' : selectedMCU === 'atmega640' ? 'm640' : selectedMCU === 'atmega128' ? 'm128' : 'm328p';
+    cmd += ` -p ${mcuPart}`;
 
     // 2. Programmer
     cmd += ` -c ${currentProg.avrdudeId}`;
@@ -560,8 +578,8 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
           </div>
 
           {/* Quick Target MCU Switcher */}
-          <div className="flex items-center gap-1 bg-slate-950/80 p-1.5 rounded-2xl border border-slate-800 shrink-0">
-            {(['atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcuId) => (
+          <div className="flex flex-wrap items-center gap-1 bg-slate-950/80 p-1.5 rounded-2xl border border-slate-800 shrink-0">
+            {(['atmega2560', 'atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcuId) => (
               <button
                 key={mcuId}
                 onClick={() => onSelectMCU(mcuId)}
@@ -956,14 +974,29 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         <TimerCounterSimulator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
       </div>
 
-      {/* Section 9: AVR Optiboot Bootloader Configurator & Build Tool */}
-      <div id="optiboot-configurator-section" className="space-y-4">
+      {/* Section 9: Bootloader Selector & Configuration (BLS Start Address & Flash Section Locks) */}
+      <div id="bootloader-selector-config-section" className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
             <HardDrive className="w-4 h-4 text-amber-400" />
-            9. AVR Optiboot 부트로더 설정 및 빌드 도구 (Optiboot Bootloader Configurator & Builder)
+            9. 부트로더 선택기 & 플래시 락비트 설정기 (Bootloader Selector & Configuration)
           </span>
           <span className="text-[11px] text-amber-400 bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-800/40 font-mono">
+            BLS 번지 계산 • BOOTSZ/BOOTRST 퓨즈 • BLB0/BLB1/LB 락비트
+          </span>
+        </div>
+
+        <BootloaderSelectorConfig selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* Section 10: AVR Optiboot Bootloader Configurator & Build Tool */}
+      <div id="optiboot-configurator-section" className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+            <HardDrive className="w-4 h-4 text-cyan-400" />
+            10. AVR Optiboot 부트로더 설정 및 빌드 도구 (Optiboot Bootloader Configurator & Builder)
+          </span>
+          <span className="text-[11px] text-cyan-400 bg-cyan-950/60 px-2.5 py-0.5 rounded-full border border-cyan-800/40 font-mono">
             STK500 프로토콜 • 보레이트 오차 분석 • optiboot.c 소스 & Makefile 자동 생성
           </span>
         </div>
@@ -971,13 +1004,13 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         <OptibootBuildConfigurator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
       </div>
 
-      {/* Section 10: Interactive Virtual Flasher Simulator */}
+      {/* Section 11: Interactive Virtual Flasher Simulator */}
       <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
           <div className="flex items-center gap-2">
             <Cpu className="w-4 h-4 text-emerald-400" />
             <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-              10. 가상 펌웨어 다운로드 시뮬레이터 (Virtual Firmware Flasher)
+              11. 가상 펌웨어 다운로드 시뮬레이터 (Virtual Firmware Flasher)
             </h3>
           </div>
           <div className="flex items-center gap-2">
@@ -1070,7 +1103,7 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
           <div className="flex items-center gap-2">
             <Terminal className="w-4 h-4 text-emerald-400" />
             <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-              11. 대화형 avrdude 프로덕션 명령어 생성기
+              12. 대화형 avrdude 프로덕션 명령어 생성기
             </h3>
           </div>
           <button
@@ -1188,7 +1221,7 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
           <HelpCircle className="w-4 h-4 text-rose-400" />
           <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-            12. 자주 발생하는 다운로드 오류 & 하드웨어 트러블슈팅
+            13. 자주 발생하는 다운로드 오류 & 하드웨어 트러블슈팅
           </h3>
         </div>
 

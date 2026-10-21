@@ -6,6 +6,10 @@ import { SleepModeEnergyAdvisor } from './SleepModeEnergyAdvisor';
 import { EnergyEstimator } from './EnergyEstimator';
 import { VoltageRegulatorPowerBudgeting } from './VoltageRegulatorPowerBudgeting';
 import { BootloaderSizeCalculator, BootloaderWordSize } from './BootloaderSizeCalculator';
+import { SimplePowerCalculator } from './SimplePowerCalculator';
+import { DynamicPowerConsumptionCalculator } from './DynamicPowerConsumptionCalculator';
+import { ThermalDissipationEstimator } from './ThermalDissipationEstimator';
+import { AvrPowerConsumptionSimulator } from './AvrPowerConsumptionSimulator';
 
 interface Props {
   selectedMCU: SupportedMCU;
@@ -34,7 +38,7 @@ export const PowerAndFusesTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) 
   // Calculate BOOTSZ1:0 bits (0 = programmed, 1 = unprogrammed)
   let bootsz1 = 1;
   let bootsz0 = 1;
-  if (selectedMCU === 'atmega128' || selectedMCU === 'atmega640') {
+  if (selectedMCU === 'atmega128' || selectedMCU === 'atmega640' || selectedMCU === 'atmega2560') {
     if (bootloaderSize === '512W') {
       bootsz1 = 1;
       bootsz0 = 1;
@@ -74,8 +78,8 @@ export const PowerAndFusesTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) 
   let efuseVal = 0xFF;
   let avrdudePart = 'm640';
 
-  if (selectedMCU === 'atmega640') {
-    avrdudePart = 'm640';
+  if (selectedMCU === 'atmega640' || selectedMCU === 'atmega2560') {
+    avrdudePart = selectedMCU === 'atmega2560' ? 'm2560' : 'm640';
     // Low Fuse
     if (ckdiv8) lfuseVal &= ~0x80;
     if (clockSource === 'ext_crystal') lfuseVal = (lfuseVal & 0xC0) | 0x3F; // 16MHz Crystal
@@ -168,8 +172,8 @@ export const PowerAndFusesTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) 
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1">
             전력 및 퓨즈 분석 대상 MCU
           </span>
-          <div className="flex gap-2">
-            {(['atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcuId) => (
+          <div className="flex flex-wrap gap-2">
+            {(['atmega2560', 'atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcuId) => (
               <button
                 key={mcuId}
                 onClick={() => onSelectMCU(mcuId)}
@@ -211,6 +215,15 @@ export const PowerAndFusesTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) 
         </div>
       </div>
 
+      {/* Dynamic Power Consumption Calculator (Clock Frequency MHz & Operating Voltage V to Estimate Typ. Active & Idle mA) */}
+      <DynamicPowerConsumptionCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* AVR Power Consumption Simulator (Total Current Draw based on Active Peripherals, Clock Freq & Operating Voltage) */}
+      <AvrPowerConsumptionSimulator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Simple Power Calculator (Operating Voltage VCC & Clock Frequency F_CPU to Estimate Typical Current Draw) */}
+      <SimplePowerCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
       {/* Dynamic Power Consumption Estimator (Clock Freq, Voltage, Peripherals ADC/SPI/UART/Timer & Typical Profiles) */}
       <DynamicPowerConsumptionEstimator selectedMCU={selectedMCU} />
 
@@ -222,6 +235,9 @@ export const PowerAndFusesTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) 
 
       {/* Voltage Regulator & Decoupling Power Budgeting Tool */}
       <VoltageRegulatorPowerBudgeting selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Thermal Dissipation & Junction Temperature (TJ) Estimator based on θJA & Package Power */}
+      <ThermalDissipationEstimator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
 
       {/* Voltage vs Frequency & Sleep Mode Row */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

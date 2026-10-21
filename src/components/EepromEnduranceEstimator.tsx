@@ -163,6 +163,18 @@ const MCU_EEPROM_SPECS: Record<SupportedMCU, McuEepromSpec> = {
     voltageMin: 1.8,
     voltageMax: 5.5,
     eraseWriteModes: 'Erase+Write (3.4ms), Erase Only (1.8ms), Write Only (1.8ms)'
+  },
+  atmega2560: {
+    sizeBytes: 4096, // 4 KB
+    nominalEndurance: 100000,
+    writeTimeMs: 3.4,
+    pageSizeBytes: 8,
+    retention25CYears: 100,
+    retention85CYears: 20,
+    chargePumpCurrentMa: 3.2,
+    voltageMin: 1.8,
+    voltageMax: 5.5,
+    eraseWriteModes: 'Erase+Write (3.4ms), Erase Only (1.8ms), Write Only (1.8ms)'
   }
 };
 
@@ -470,7 +482,7 @@ export const EepromEnduranceEstimator: React.FC<Props> = ({
           <span className="text-[11px] font-medium text-slate-400 mr-1 flex items-center gap-1">
             <Cpu className="w-3.5 h-3.5 text-cyan-400" /> 대상 MCU:
           </span>
-          {(['atmega328p', 'atmega128', 'atmega640'] as SupportedMCU[]).map((mcu) => (
+          {(['atmega2560', 'atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcu) => (
             <button
               key={mcu}
               onClick={() => onSelectMCU?.(mcu)}
