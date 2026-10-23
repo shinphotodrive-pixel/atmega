@@ -2,7 +2,10 @@ import React, { useState } from 'react';
 import { Cpu, Zap, Layers, Activity, CheckCircle, BarChart3, AlertTriangle, ShieldCheck } from 'lucide-react';
 import { MCU_PROFILES, SupportedMCU } from '../data/pinmapData';
 import { PeripheralSignalVisualizer } from './PeripheralSignalVisualizer';
+import { PeripheralPinMappingDashboard } from './PeripheralPinMappingDashboard';
+import { BusTimingSimulator } from './BusTimingSimulator';
 import { MemoryMapVisualizer } from './MemoryMapVisualizer';
+import { MemoryMapExplorer } from './MemoryMapExplorer';
 import { FlashMemoryLayoutVisualizer } from './FlashMemoryLayoutVisualizer';
 import { InterruptLatencyCalculator } from './InterruptLatencyCalculator';
 import { InterruptResponseTimeEstimator } from './InterruptResponseTimeEstimator';
@@ -19,6 +22,7 @@ import { DmaTransferConfigGuide } from './DmaTransferConfigGuide';
 import { ClockPowerAnalyzer } from './ClockPowerAnalyzer';
 import { AdcNoiseReductionCalibrationCalculator } from './AdcNoiseReductionCalibrationCalculator';
 import { PowerConsumptionTimelineAnalyzer } from './PowerConsumptionTimelineAnalyzer';
+import { GpioVisualizer } from './GpioVisualizer';
 import { GpioSignalParams, DEFAULT_GPIO_PARAMS } from '../data/gpioSignalTypes';
 
 interface MCUModel {
@@ -361,6 +365,11 @@ export const ArchitectureTab: React.FC<Props> = ({
         </div>
       </div>
 
+      {/* Peripheral Pin Mapping Dashboard & Visual Pin Tree (Drag & Drop Pin Reassignment & Conflict Detector) */}
+      <div id="peripheral-pin-mapping-dashboard-section" className="scroll-mt-20">
+        <PeripheralPinMappingDashboard selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
       {/* Virtual Oscilloscope (Real-time GPIO Signal Trace with Noise & Jitter Simulation) */}
       <div id="virtual-oscilloscope-section" className="scroll-mt-20 space-y-4">
         <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xl backdrop-blur">
@@ -398,6 +407,15 @@ export const ArchitectureTab: React.FC<Props> = ({
             onClose={() => setScopeOpen(false)}
           />
         )}
+      </div>
+
+      {/* GPIO Visualizer (D3-Powered Real-Time Digital Signal Timing Diagram based on Frequency & Duty Cycle) */}
+      <div id="gpio-visualizer-section" className="scroll-mt-20">
+        <GpioVisualizer
+          selectedMCU={selectedMCU}
+          gpioParams={activeGpioParams}
+          onUpdateGpioParams={onUpdateGpioParams}
+        />
       </div>
 
       {/* Virtual Logic Analyzer (Multi-Channel Digital Timings & Transition Latency) */}
@@ -439,6 +457,16 @@ export const ArchitectureTab: React.FC<Props> = ({
 
       {/* Interactive Peripheral Signal Visualizer (PWM & ADC Recharts Simulator) */}
       <PeripheralSignalVisualizer selectedMCU={selectedMCU} />
+
+      {/* I2C / SPI Bus Timing Simulator (Data Clock Frequencies, Rise/Fall Times & Signal Integrity) */}
+      <div id="bus-timing-simulator-section" className="scroll-mt-20">
+        <BusTimingSimulator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* Memory Map Explorer (Interactive Address Spaces & Overflow Allocation Debugger) */}
+      <div id="memory-map-explorer-section" className="scroll-mt-20">
+        <MemoryMapExplorer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
 
       {/* Memory Map Visualizer (Stacked Bar Chart: Flash, SRAM, EEPROM & Reserved Regions) */}
       <MemoryMapVisualizer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />

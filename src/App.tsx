@@ -4,18 +4,19 @@ import { ComparisonTab } from './components/ComparisonTab';
 import { UniversalMcuComparisonTab } from './components/UniversalMcuComparisonTab';
 import { PinmapTab } from './components/PinmapTab';
 import { RegistersTab } from './components/RegistersTab';
+import { InterruptsTab } from './components/InterruptsTab';
 import { PowerAndFusesTab } from './components/PowerAndFusesTab';
 import { ResourcesTab } from './components/ResourcesTab';
 import { ProgramTab } from './components/ProgramTab';
 import { GlobalRegisterSearch } from './components/GlobalRegisterSearch';
-import { Cpu, HardDrive, Share2, Radio, Layers, Gauge, Activity, Table, Download } from 'lucide-react';
+import { Cpu, HardDrive, Share2, Radio, Layers, Gauge, Activity, Table, Download, Zap } from 'lucide-react';
 import { SupportedMCU, MCU_PROFILES } from './data/pinmapData';
 import { GpioSignalParams, DEFAULT_GPIO_PARAMS } from './data/gpioSignalTypes';
 import confetti from 'canvas-confetti';
 
 export default function App() {
   const [selectedMCU, setSelectedMCU] = useState<SupportedMCU>('atmega640');
-  const [activeTab, setActiveTab] = useState<'comparison' | 'universal_comp' | 'arch' | 'pinmap' | 'registers' | 'power' | 'resources' | 'program'>('comparison');
+  const [activeTab, setActiveTab] = useState<'comparison' | 'universal_comp' | 'arch' | 'pinmap' | 'registers' | 'interrupts' | 'power' | 'resources' | 'program'>('comparison');
   const [copiedShare, setCopiedShare] = useState(false);
 
   // Virtual Oscilloscope & GPIO Toggling Shared Parameters
@@ -89,12 +90,9 @@ export default function App() {
               <div>
                 <div className="flex items-center gap-2">
                   <h1 className="text-base sm:text-lg font-black text-white tracking-tight">
-                    AVR 펌웨어 개발 & 아키텍처 가이드
+                    AVR 펌웨어 개발
                   </h1>
                 </div>
-                <p className="text-xs text-slate-400 hidden sm:block">
-                  MCU Spec Matrix Comparison, Pinout Explorer, Register Calculators & Low-Power Engineering
-                </p>
               </div>
             </div>
 
@@ -202,6 +200,17 @@ export default function App() {
                 }`}
               >
                 SFR 레지스터 계산기
+              </button>
+              <button
+                onClick={() => setActiveTab('interrupts')}
+                className={`whitespace-nowrap px-3 py-1.5 font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
+                  activeTab === 'interrupts'
+                    ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-bold'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                }`}
+              >
+                <Zap className="w-3.5 h-3.5" />
+                인터럽트 (IVT & 충돌 디버거)
               </button>
               <button
                 onClick={() => setActiveTab('power')}
@@ -351,6 +360,9 @@ export default function App() {
             onUpdateGpioParams={handleUpdateGpioParams}
             onNavigateToOscilloscope={handleNavigateToOscilloscope}
           />
+        )}
+        {activeTab === 'interrupts' && (
+          <InterruptsTab selectedMCU={selectedMCU} onSelectMCU={setSelectedMCU} />
         )}
         {activeTab === 'power' && (
           <PowerAndFusesTab selectedMCU={selectedMCU} onSelectMCU={setSelectedMCU} />

@@ -1,12 +1,18 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { SupportedMCU, MCU_PROFILES } from '../data/pinmapData';
 import { MakefileGenerator } from './MakefileGenerator';
+import { PeripheralInitGenerator } from './PeripheralInitGenerator';
+import { FirmwareBuildStatus } from './FirmwareBuildStatus';
+import { CompilerOptimizationAnalyzer } from './CompilerOptimizationAnalyzer';
 import { InterruptVectorTableGenerator } from './InterruptVectorTableGenerator';
+import { AvrdudeCommandReference } from './AvrdudeCommandReference';
 import { FirmwareCrcIntegrityCalculator } from './FirmwareCrcIntegrityCalculator';
 import { SerialProtocolDataLogger } from './SerialProtocolDataLogger';
 import { TimerCounterSimulator } from './TimerCounterSimulator';
+import { BootloaderManager } from './BootloaderManager';
 import { OptibootBuildConfigurator } from './OptibootBuildConfigurator';
 import { BootloaderSelectorConfig } from './BootloaderSelectorConfig';
+import { ProgramMemoryMapVisualizer } from './ProgramMemoryMapVisualizer';
 import {
   Download,
   Terminal,
@@ -18,6 +24,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   Copy,
+  Hammer,
   Check,
   Info,
   ShieldCheck,
@@ -39,7 +46,8 @@ import {
   Wrench,
   CheckCircle,
   XCircle,
-  FolderOpen
+  FolderOpen,
+  PieChart
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -310,6 +318,14 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
   const [simulationStatus, setSimulationStatus] = useState<'idle' | 'running' | 'success' | 'failed'>('idle');
   const terminalRef = useRef<HTMLDivElement>(null);
 
+  const handleSendToFlasher = (hexName: string) => {
+    setHexFileName(hexName);
+    const flasherEl = document.getElementById('virtual-flasher-section');
+    if (flasherEl) {
+      flasherEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const currentProg = useMemo(() => {
     return PROGRAMMERS.find((p) => p.id === selectedProgrammer) || PROGRAMMERS[0];
   }, [selectedProgrammer]);
@@ -551,6 +567,9 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
                 {currentProfile.name}
               </span>
               <span className="px-2.5 py-0.5 rounded-md bg-cyan-950/60 text-cyan-300 border border-cyan-800/40 text-xs font-mono font-bold flex items-center gap-1">
+                <FileCode2 className="w-3.5 h-3.5" /> 주변장치 초기화 C 헤더 생성기
+              </span>
+              <span className="px-2.5 py-0.5 rounded-md bg-cyan-950/60 text-cyan-300 border border-cyan-800/40 text-xs font-mono font-bold flex items-center gap-1">
                 <FileCode2 className="w-3.5 h-3.5" /> AVR-GCC Makefile 생성기 내장
               </span>
               <span className="px-2.5 py-0.5 rounded-md bg-rose-950/60 text-rose-300 border border-rose-800/40 text-xs font-mono font-bold flex items-center gap-1">
@@ -568,12 +587,27 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
               <span className="px-2.5 py-0.5 rounded-md bg-amber-950/60 text-amber-300 border border-amber-800/40 text-xs font-mono font-bold flex items-center gap-1">
                 <HardDrive className="w-3.5 h-3.5" /> Optiboot 부트로더 빌더
               </span>
+              <span className="px-2.5 py-0.5 rounded-md bg-emerald-950/60 text-emerald-400 border border-emerald-800/40 text-xs font-mono font-bold flex items-center gap-1">
+                <Terminal className="w-3.5 h-3.5" /> avrdude 커맨드라인 아규먼트 사전
+              </span>
+              <span className="px-2.5 py-0.5 rounded-md bg-cyan-950/60 text-cyan-300 border border-cyan-800/40 text-xs font-mono font-bold flex items-center gap-1">
+                <Hammer className="w-3.5 h-3.5" /> 펌웨어 빌드 상태 & 스테이지 트래커
+              </span>
+              <span className="px-2.5 py-0.5 rounded-md bg-amber-950/60 text-amber-300 border border-amber-800/40 text-xs font-mono font-bold flex items-center gap-1">
+                <Zap className="w-3.5 h-3.5" /> 컴파일러 최적화 분석기 (-Os/-O2/-O0/-Ofast)
+              </span>
+              <span className="px-2.5 py-0.5 rounded-md bg-amber-950/60 text-amber-300 border border-amber-800/40 text-xs font-mono font-bold flex items-center gap-1">
+                <HardDrive className="w-3.5 h-3.5" /> 부트로더 매니저 (Optiboot vs Arduino)
+              </span>
+              <span className="px-2.5 py-0.5 rounded-md bg-cyan-950/60 text-cyan-300 border border-cyan-800/40 text-xs font-mono font-bold flex items-center gap-1">
+                <PieChart className="w-3.5 h-3.5" /> 메모리 맵 시각화 도구 (Flash & SRAM 도넛 차트)
+              </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
               AVR 펌웨어 다운로드 & ISP 프로그래머 배선 가이드
             </h2>
             <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-3xl leading-relaxed">
-              USBasp, Arduino as ISP, UART 부트로더(Optiboot) 빌더 및 설정 도구, Atmel-ICE 등 다양한 하드웨어 프로그래머를 사용한 핀 결선법과 툴체인별 플래싱 절차, 타이머/카운터 설정 시뮬레이터, 시리얼 프로토콜 데이터 로거, Flash/EEPROM 무결성 검증 CRC-16 계산기, 인터럽트 벡터 테이블 기반 ISR 코드 생성기, 컴파일러 플래그 Makefile 생성기 및 대화형 avrdude 명령어 생성기를 제공합니다.
+              USBasp, Arduino as ISP, UART 부트로더(Optiboot) 빌더 및 설정 도구, Atmel-ICE 등 다양한 하드웨어 프로그래머를 사용한 핀 결선법과 툴체인별 플래싱 절차, Flash 및 SRAM 섹션별 메모리 맵 도넛 차트 시각화, 타이머/카운터 설정 시뮬레이터, 시리얼 프로토콜 데이터 로거, Flash/EEPROM 무결성 검증 CRC-16 계산기, 인터럽트 벡터 테이블 기반 ISR 코드 생성기, 컴파일러 플래그 Makefile 생성기 및 대화형 avrdude 명령어 생성기를 제공합니다.
             </p>
           </div>
 
@@ -899,12 +933,27 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         })()}
       </div>
 
-      {/* Section 4: Production AVR-GCC Makefile Generator */}
+      {/* Section 4: Peripheral Initialization C Header Driver Generator */}
+      <div id="peripheral-init-generator-section" className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+            <FileCode2 className="w-4 h-4 text-cyan-400" />
+            4. 주변장치 초기화 C 헤더 생성기 (Peripheral Initialization Generator - mcu_peripherals.h)
+          </span>
+          <span className="text-[11px] text-cyan-400 bg-cyan-950/60 px-2.5 py-0.5 rounded-full border border-cyan-800/40 font-mono">
+            USART • I2C • Timer1 PWM • 10-Bit ADC • GPIO • One-Click .h Export
+          </span>
+        </div>
+
+        <PeripheralInitGenerator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* Section 5: Production AVR-GCC Makefile Generator */}
       <div id="makefile-generator-section" className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
             <FileCode2 className="w-4 h-4 text-cyan-400" />
-            4. AVR-GCC 메이크파일 생성기 (Makefile Generator & 컴파일러 플래그 제안)
+            5. AVR-GCC 메이크파일 생성기 (Makefile Generator & 컴파일러 플래그 제안)
           </span>
           <span className="text-[11px] text-cyan-400 bg-cyan-950/60 px-2.5 py-0.5 rounded-full border border-cyan-800/40 font-mono">
             -mmcu={selectedMCU} • -Os vs -O2 • LTO • One-Click Copy
@@ -914,12 +963,57 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         <MakefileGenerator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
       </div>
 
-      {/* Section 5: Interrupt Vector Table & ISR Code Generator */}
+      {/* Section 6: Firmware Build Status (IDE Compilation Lifecycle) */}
+      <div id="firmware-build-status-section" className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+            <Hammer className="w-4 h-4 text-cyan-400" />
+            6. 펌웨어 빌드 상태 & 컴파일 스테이지 트래커 (Firmware Build Status - Mock IDE)
+          </span>
+          <span className="text-[11px] text-cyan-400 bg-cyan-950/60 px-2.5 py-0.5 rounded-full border border-cyan-800/40 font-mono">
+            avr-gcc • -Os • Pre-processing ➔ Compilation ➔ Linking ➔ Hex Generation
+          </span>
+        </div>
+
+        <FirmwareBuildStatus selectedMCU={selectedMCU} onSendToFlasher={handleSendToFlasher} />
+      </div>
+
+      {/* Section 7: Compiler Optimization Analyzer */}
+      <div id="compiler-optimization-analyzer-section" className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+            <Zap className="w-4 h-4 text-amber-400" />
+            7. GCC 컴파일러 최적화 분석기 (Compiler Optimization Analyzer - -O0 / -O2 / -Os / -Ofast)
+          </span>
+          <span className="text-[11px] text-amber-400 bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-800/40 font-mono">
+            -O0 • -O1 • -O2 • -O3 • -Os • -Ofast • -Og • -flto • 코드 크기 & 빌드 시간 실시간 프리뷰
+          </span>
+        </div>
+
+        <CompilerOptimizationAnalyzer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* Section 8: Program Memory Map Visualizer (Flash & SRAM Donut Charts) */}
+      <div id="program-memory-map-visualizer-section" className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+            <PieChart className="w-4 h-4 text-cyan-400" />
+            8. 메모리 맵 시각화 도구 (Memory Map Visualizer - Flash & SRAM Donut Charts)
+          </span>
+          <span className="text-[11px] text-cyan-400 bg-cyan-950/60 px-2.5 py-0.5 rounded-full border border-cyan-800/40 font-mono">
+            코드 • 데이터 • BSS • 힙 • 스택 • 도넛 차트 • 예상 잔여 공간
+          </span>
+        </div>
+
+        <ProgramMemoryMapVisualizer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* Section 9: Interrupt Vector Table & ISR Code Generator */}
       <div id="interrupt-vector-table-section" className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
             <Bell className="w-4 h-4 text-rose-400" />
-            5. AVR 인터럽트 벡터 테이블 & ISR 코드 생성기 (Interrupt Vector Table Generator)
+            9. AVR 인터럽트 벡터 테이블 & ISR 코드 생성기 (Interrupt Vector Table Generator)
           </span>
           <span className="text-[11px] text-rose-400 bg-rose-950/60 px-2.5 py-0.5 rounded-full border border-rose-800/40 font-mono">
             하드웨어 우선순위 • ISR_NOBLOCK 중첩 • BADISR 세이프가드
@@ -929,12 +1023,12 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         <InterruptVectorTableGenerator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
       </div>
 
-      {/* Section 6: Firmware CRC-16 Data Integrity Calculator */}
+      {/* Section 10: Firmware CRC-16 Data Integrity Calculator */}
       <div id="crc-integrity-section" className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            6. Flash/EEPROM 데이터 무결성 체크용 CRC-16 계산기 (Data Integrity & Macro Generator)
+            10. Flash/EEPROM 데이터 무결성 체크용 CRC-16 계산기 (Data Integrity & Macro Generator)
           </span>
           <span className="text-[11px] text-emerald-400 bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-800/40 font-mono">
             CRC-16-CCITT • _crc_ccitt_update() • 펌웨어 변조 방지 자가 검증
@@ -944,12 +1038,12 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         <FirmwareCrcIntegrityCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
       </div>
 
-      {/* Section 7: Serial Protocol Data Logger & Baud Rate Timing Inspector */}
+      {/* Section 11: Serial Protocol Data Logger & Baud Rate Timing Inspector */}
       <div id="serial-protocol-logger-section" className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
             <Radio className="w-4 h-4 text-cyan-400" />
-            7. 시리얼 프로토콜 데이터 로거 & 보레이트 타이밍 검증기 (UART Packet & Timing Inspector)
+            11. 시리얼 프로토콜 데이터 로거 & 보레이트 타이밍 검증기 (UART Packet & Timing Inspector)
           </span>
           <span className="text-[11px] text-cyan-400 bg-cyan-950/60 px-2.5 py-0.5 rounded-full border border-cyan-800/40 font-mono">
             패킷 헤더/페이로드/체크섬 검증 • 10-Bit 타이밍 도표 • FSM 파서 C 코드
@@ -959,12 +1053,12 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         <SerialProtocolDataLogger selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
       </div>
 
-      {/* Section 8: AVR Timer/Counter Configuration Simulator & TCCR Register Builder */}
+      {/* Section 12: AVR Timer/Counter Configuration Simulator & TCCR Register Builder */}
       <div id="timer-counter-simulator-section" className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
             <Clock className="w-4 h-4 text-violet-400" />
-            8. AVR 타이머/카운터 설정 시뮬레이터 & TCCR 레지스터 생성기 (Timer/Counter Simulator)
+            12. AVR 타이머/카운터 설정 시뮬레이터 & TCCR 레지스터 생성기 (Timer/Counter Simulator)
           </span>
           <span className="text-[11px] text-violet-400 bg-violet-950/60 px-2.5 py-0.5 rounded-full border border-violet-800/40 font-mono">
             Normal / CTC / PWM 모드 • 실시간 주파수 & 오버플로우 주기 • TCCR 비트필드 자동 생성
@@ -974,12 +1068,27 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         <TimerCounterSimulator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
       </div>
 
-      {/* Section 9: Bootloader Selector & Configuration (BLS Start Address & Flash Section Locks) */}
+      {/* Section 13: Bootloader Manager (Optiboot vs Arduino & UART Auto-Baudrate Analyzer) */}
+      <div id="bootloader-manager-section" className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+            <HardDrive className="w-4 h-4 text-amber-400" />
+            13. 부트로더 매니저 & 오토보레이트 분석기 (Bootloader Manager - Optiboot vs Arduino)
+          </span>
+          <span className="text-[11px] text-amber-400 bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-800/40 font-mono">
+            Optiboot • ATmegaBOOT • STK500v2 • Urboot • 메모리 풋프린트 & UART 오차율
+          </span>
+        </div>
+
+        <BootloaderManager selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* Section 14: Bootloader Selector & Configuration (BLS Start Address & Flash Section Locks) */}
       <div id="bootloader-selector-config-section" className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
             <HardDrive className="w-4 h-4 text-amber-400" />
-            9. 부트로더 선택기 & 플래시 락비트 설정기 (Bootloader Selector & Configuration)
+            14. 부트로더 선택기 & 플래시 락비트 설정기 (Bootloader Selector & Configuration)
           </span>
           <span className="text-[11px] text-amber-400 bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-800/40 font-mono">
             BLS 번지 계산 • BOOTSZ/BOOTRST 퓨즈 • BLB0/BLB1/LB 락비트
@@ -989,12 +1098,12 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         <BootloaderSelectorConfig selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
       </div>
 
-      {/* Section 10: AVR Optiboot Bootloader Configurator & Build Tool */}
+      {/* Section 15: AVR Optiboot Bootloader Configurator & Build Tool */}
       <div id="optiboot-configurator-section" className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
             <HardDrive className="w-4 h-4 text-cyan-400" />
-            10. AVR Optiboot 부트로더 설정 및 빌드 도구 (Optiboot Bootloader Configurator & Builder)
+            15. AVR Optiboot 부트로더 설정 및 빌드 도구 (Optiboot Bootloader Configurator & Builder)
           </span>
           <span className="text-[11px] text-cyan-400 bg-cyan-950/60 px-2.5 py-0.5 rounded-full border border-cyan-800/40 font-mono">
             STK500 프로토콜 • 보레이트 오차 분석 • optiboot.c 소스 & Makefile 자동 생성
@@ -1004,13 +1113,13 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         <OptibootBuildConfigurator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
       </div>
 
-      {/* Section 11: Interactive Virtual Flasher Simulator */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 space-y-5">
+      {/* Section 16: Interactive Virtual Flasher Simulator */}
+      <div id="virtual-flasher-section" className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
           <div className="flex items-center gap-2">
             <Cpu className="w-4 h-4 text-emerald-400" />
             <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-              11. 가상 펌웨어 다운로드 시뮬레이터 (Virtual Firmware Flasher)
+              16. 가상 펌웨어 다운로드 시뮬레이터 (Virtual Firmware Flasher)
             </h3>
           </div>
           <div className="flex items-center gap-2">
@@ -1097,13 +1206,13 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         </div>
       </div>
 
-      {/* Section 11: Interactive avrdude Command Generator */}
+      {/* Section 17: Interactive avrdude Command Generator */}
       <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
           <div className="flex items-center gap-2">
             <Terminal className="w-4 h-4 text-emerald-400" />
             <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-              12. 대화형 avrdude 프로덕션 명령어 생성기
+              17. 대화형 avrdude 프로덕션 명령어 생성기
             </h3>
           </div>
           <button
@@ -1216,12 +1325,27 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         </div>
       </div>
 
-      {/* Section 12: Troubleshooting FAQ & Error Diagnostics */}
+      {/* Section 18: avrdude CLI Command & Flag Reference */}
+      <div id="avrdude-command-reference-section" className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+            <Terminal className="w-4 h-4 text-emerald-400" />
+            18. avrdude 커맨드라인 레퍼런스 & 플래그 사전 (Command Reference & Fuse Setting Recipes)
+          </span>
+          <span className="text-[11px] text-emerald-400 bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-800/40 font-mono">
+            -p • -c • -U • -B • -P • -b • USBasp • ArduinoISP • Optiboot • Fuses
+          </span>
+        </div>
+
+        <AvrdudeCommandReference selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* Section 19: Troubleshooting FAQ & Error Diagnostics */}
       <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 space-y-4">
         <div className="flex items-center gap-2 border-b border-slate-800 pb-3">
           <HelpCircle className="w-4 h-4 text-rose-400" />
           <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-            13. 자주 발생하는 다운로드 오류 & 하드웨어 트러블슈팅
+            19. 자주 발생하는 다운로드 오류 & 하드웨어 트러블슈팅
           </h3>
         </div>
 

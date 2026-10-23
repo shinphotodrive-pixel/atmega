@@ -12,6 +12,7 @@ import { BuildSystemGenerator } from './BuildSystemGenerator';
 import { RegisterStatusDashboard } from './RegisterStatusDashboard';
 import { RegisterSnapshotSimulator } from './RegisterSnapshotSimulator';
 import { RegisterCodeSnippetGenerator } from './RegisterCodeSnippetGenerator';
+import { BitManipulationAssistant } from './BitManipulationAssistant';
 import { RegisterConfigComparator } from './RegisterConfigComparator';
 import { PeripheralRegisterTreeView } from './PeripheralRegisterTreeView';
 import { SerialTimelineSimulator } from './SerialTimelineSimulator';
@@ -271,6 +272,9 @@ void Write_OCR1A_Atomic(uint16_t val) {
 
       {/* Real-time Register Status Dashboard (Live Bit Monitor & Datasheet Inspector) */}
       <RegisterStatusDashboard selectedMCU={selectedMCU} />
+
+      {/* Bit Manipulation Assistant (C-Code Hex Mask & (1 << BIT) Macro Solver) */}
+      <BitManipulationAssistant selectedMCU={selectedMCU} />
 
       {/* Register Snapshot Simulator (Interactive SFR to Hardware Physical Reaction: Pins, PWM, Overflow) */}
       <RegisterSnapshotSimulator selectedMCU={selectedMCU} />
