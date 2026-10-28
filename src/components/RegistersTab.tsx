@@ -14,11 +14,16 @@ import { RegisterSnapshotSimulator } from './RegisterSnapshotSimulator';
 import { RegisterCodeSnippetGenerator } from './RegisterCodeSnippetGenerator';
 import { BitManipulationAssistant } from './BitManipulationAssistant';
 import { RegisterConfigComparator } from './RegisterConfigComparator';
+import { RegisterDeltaChecker } from './RegisterDeltaChecker';
+import { RegisterComparisonViewer } from './RegisterComparisonViewer';
+import { RegisterTimelineHistory } from './RegisterTimelineHistory';
+import { RegisterLogicSimulator } from './RegisterLogicSimulator';
 import { PeripheralRegisterTreeView } from './PeripheralRegisterTreeView';
 import { SerialTimelineSimulator } from './SerialTimelineSimulator';
 import { SerialDebugLogParser } from './SerialDebugLogParser';
 import { BootloaderCustomizer } from './BootloaderCustomizer';
 import { EepromDataVisualizer } from './EepromDataVisualizer';
+import { EepromEndurancePredictor } from './EepromEndurancePredictor';
 import { FirmwareUnitTestGenerator } from './FirmwareUnitTestGenerator';
 import { HardwareDebuggerConfigurator } from './HardwareDebuggerConfigurator';
 import { SfrRegisterDifferential } from './SfrRegisterDifferential';
@@ -27,9 +32,11 @@ import { LiveRegisterWatcher } from './LiveRegisterWatcher';
 import { GpioTogglingConfigurator } from './GpioTogglingConfigurator';
 import { TimerPrescalerCalculator } from './TimerPrescalerCalculator';
 import { UartBaudRateErrorCalculator } from './UartBaudRateErrorCalculator';
+import { UartBaudRateGenerator } from './UartBaudRateGenerator';
 import { WatchdogTimeoutCalculator } from './WatchdogTimeoutCalculator';
 import { SpiTimingDiagramVisualizer } from './SpiTimingDiagramVisualizer';
 import { I2cBitRateCalculator } from './I2cBitRateCalculator';
+import { TwiI2cBitrateCalculator } from './TwiI2cBitrateCalculator';
 import { GpioSignalParams, DEFAULT_GPIO_PARAMS } from '../data/gpioSignalTypes';
 
 interface Props {
@@ -276,11 +283,26 @@ void Write_OCR1A_Atomic(uint16_t val) {
       {/* Bit Manipulation Assistant (C-Code Hex Mask & (1 << BIT) Macro Solver) */}
       <BitManipulationAssistant selectedMCU={selectedMCU} />
 
+      {/* Register Logic Simulator (Live Hardware Physical Reaction & Frequency/ADC/Baud Calculations) */}
+      <RegisterLogicSimulator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
       {/* Register Snapshot Simulator (Interactive SFR to Hardware Physical Reaction: Pins, PWM, Overflow) */}
       <RegisterSnapshotSimulator selectedMCU={selectedMCU} />
 
       {/* C Register Initialization Code Generator (Clean Bitwise Shift Macros & Atomic Blocks) */}
       <RegisterCodeSnippetGenerator selectedMCU={selectedMCU} />
+
+      {/* Register Configuration Comparator (Side-by-Side Dual State Bit-Level Comparison) */}
+      <RegisterConfigComparator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Register Delta Checker (Dual MCU Configuration Bitwise XOR & State Comparator) */}
+      <RegisterDeltaChecker selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Register Comparison Viewer (Cross-MCU Side-by-Side Bit-level Difference Viewer) */}
+      <RegisterComparisonViewer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Register Timeline History (Live Bit-Level History Tracking, Revert & Scrubbing Slider) */}
+      <RegisterTimelineHistory selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
 
       {/* Register Diff Tool (Cross-MCU Address & Bit-Field Discrepancy Visualizer) */}
       <RegisterDiffTool selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
@@ -302,6 +324,11 @@ void Write_OCR1A_Atomic(uint16_t val) {
       {/* Timer/Counter Configuration Wizard (Auto-generate TCCR, OCR, TCNT Register Values & C Code) */}
       <TimerPrescalerCalculator selectedMCU={selectedMCU} />
 
+      {/* USART Baud Rate Calculator (System Clock, Desired Baud Rate, U2Xn Double Speed Toggle, UBRRn & Error %) */}
+      <div id="usart-baud-rate-calculator-section" className="scroll-mt-20">
+        <UartBaudRateGenerator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
       {/* UART Baud Rate Error Calculator (UBRR & Percentage Error Analyzer to avoid communication failures) */}
       <UartBaudRateErrorCalculator selectedMCU={selectedMCU} />
 
@@ -311,8 +338,15 @@ void Write_OCR1A_Atomic(uint16_t val) {
       {/* SPI Timing Diagram Visualizer (Modes 0/1/2/3, SCK/MOSI/MISO/SS Waveforms & Hardware Timing Parameters) */}
       <SpiTimingDiagramVisualizer selectedMCU={selectedMCU} />
 
-      {/* I2C Bit Rate Calculator (TWBR & Prescaler TWPS Auto-Solver & Error Analyzer) */}
-      <I2cBitRateCalculator selectedMCU={selectedMCU} />
+      {/* I2C Bitrate Calculator (TWBR Register Value & Prescaler Configuration Solver) */}
+      <div id="i2c-bitrate-calculator-section" className="scroll-mt-20">
+        <I2cBitRateCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* TWI/I2C Bitrate Calculator (TWBR Register Value & Prescaler Settings Solver) */}
+      <div id="twi-i2c-bitrate-calculator-section" className="scroll-mt-20">
+        <TwiI2cBitrateCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
 
       {/* Communications Timing Calculator (I2C / SPI / USART Prescalers & BRR/UBRR) */}
       <CommTimingCalculator selectedMCU={selectedMCU} />
@@ -343,6 +377,9 @@ void Write_OCR1A_Atomic(uint16_t val) {
 
       {/* Bootloader Customizer (BOOTSZ, Optiboot, Linker & Fuse Build Flags) */}
       <BootloaderCustomizer selectedMCU={selectedMCU} />
+
+      {/* EEPROM Endurance Predictor (Variable Write Frequency & Projected Time-to-Failure Simulator) */}
+      <EepromEndurancePredictor selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
 
       {/* EEPROM Data Visualizer & Hex-Dump Inspector */}
       <EepromDataVisualizer selectedMCU={selectedMCU} />

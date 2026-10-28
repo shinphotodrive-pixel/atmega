@@ -25,6 +25,7 @@ import { SupportedMCU, MCU_PROFILES } from '../data/pinmapData';
 
 interface Props {
   selectedMCU: SupportedMCU;
+  onSelectMCU?: (mcu: SupportedMCU) => void;
 }
 
 interface BusSpeedPreset {
@@ -83,7 +84,7 @@ const CLOCK_PRESETS = [
   { fcpu: 20000000, label: '20.0 MHz (AVR 오버클럭 최대)', isCrystal: true }
 ];
 
-export const I2cBitRateCalculator: React.FC<Props> = ({ selectedMCU }) => {
+export const I2cBitRateCalculator: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
   const currentProfile = MCU_PROFILES[selectedMCU];
 
   // Frequency and Speed inputs
@@ -389,34 +390,55 @@ void I2C_Example_Write(void) {
   };
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 backdrop-blur shadow-xl space-y-6">
+    <div id="i2c-bitrate-calculator-section" className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 backdrop-blur shadow-xl space-y-6 scroll-mt-20">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-800">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold mb-2">
-            <Radio className="w-3.5 h-3.5" /> I2C / TWI Bit Rate & Prescaler Calculator
+            <Radio className="w-3.5 h-3.5" /> I2C Bitrate Calculator (TWBR & Prescaler)
           </div>
-          <h3 className="text-xl font-bold text-white tracking-tight flex items-center gap-2.5">
-            <span>I2C 통신속도 & TWBR 레지스터 계산기</span>
+          <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
+            <span>I2C Bitrate Calculator & TWBR 계산기</span>
             <span className="text-xs font-mono font-medium px-2 py-0.5 rounded-md bg-slate-800 text-cyan-300 border border-slate-700">
               {currentProfile.name}
             </span>
           </h3>
           <p className="text-xs text-slate-400 mt-1 max-w-3xl leading-relaxed">
-            시스템 클럭 주파수(F_CPU)와 목표 I2C 버스 속도(100kHz, 400kHz 등)를 기반으로
-            ATmega 하드웨어 TWI 모듈의 <strong>TWBR (TWI Bit Rate Register)</strong> 값과 <strong>TWPS 프리스케일러</strong> 설정을
-            정밀 계산하고, 실제 달성 주파수와 오차율을 분석합니다.
+            시스템 클럭 주파수(F_CPU)와 목표 I2C 버스 SCL 속도(50kHz, 100kHz, 400kHz 등)를 선택하여
+            ATmega 하드웨어 TWI 모듈의 <strong>TWBR (Two-Wire Bit Rate Register)</strong> 값과 <strong>TWPS 프리스케일러</strong> 설정을
+            정밀 계산하고, 실제 달성 주파수와 오차율을 실시간으로 분석합니다.
           </p>
         </div>
 
-        {/* Quick Spec Badge */}
-        <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-3 text-right shrink-0">
-          <div className="text-[11px] text-slate-400 font-mono">하드웨어 I2C 핀아웃</div>
-          <div className="text-xs font-bold font-mono text-cyan-400">
-            SDA: {pinDetails.sdaPin}
-          </div>
-          <div className="text-xs font-bold font-mono text-cyan-400">
-            SCL: {pinDetails.sclPin}
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Quick MCU Switcher */}
+          {onSelectMCU && (
+            <div className="flex items-center gap-1 bg-slate-950/80 p-1.5 rounded-2xl border border-slate-800 shrink-0">
+              {(['atmega2560', 'atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcuId) => (
+                <button
+                  key={mcuId}
+                  onClick={() => onSelectMCU(mcuId)}
+                  className={`px-3 py-1.5 text-xs font-bold rounded-xl transition ${
+                    selectedMCU === mcuId
+                      ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {MCU_PROFILES[mcuId].name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Quick Spec Badge */}
+          <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-3 text-right shrink-0">
+            <div className="text-[11px] text-slate-400 font-mono">하드웨어 I2C 핀아웃</div>
+            <div className="text-xs font-bold font-mono text-cyan-400">
+              SDA: {pinDetails.sdaPin}
+            </div>
+            <div className="text-xs font-bold font-mono text-cyan-400">
+              SCL: {pinDetails.sclPin}
+            </div>
           </div>
         </div>
       </div>

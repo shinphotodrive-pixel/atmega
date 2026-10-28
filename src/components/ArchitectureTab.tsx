@@ -4,6 +4,8 @@ import { MCU_PROFILES, SupportedMCU } from '../data/pinmapData';
 import { PeripheralSignalVisualizer } from './PeripheralSignalVisualizer';
 import { PeripheralPinMappingDashboard } from './PeripheralPinMappingDashboard';
 import { BusTimingSimulator } from './BusTimingSimulator';
+import { McuMemorySpaceVisualizer } from './McuMemorySpaceVisualizer';
+import { SramFlashMemoryMapVisualizer } from './SramFlashMemoryMapVisualizer';
 import { MemoryMapVisualizer } from './MemoryMapVisualizer';
 import { MemoryMapExplorer } from './MemoryMapExplorer';
 import { FlashMemoryLayoutVisualizer } from './FlashMemoryLayoutVisualizer';
@@ -12,6 +14,9 @@ import { InterruptResponseTimeEstimator } from './InterruptResponseTimeEstimator
 import { InterruptLatencyEstimator } from './InterruptLatencyEstimator';
 import { InterruptVectorTableExplorer } from './InterruptVectorTableExplorer';
 import { VirtualOscilloscopeOverlay } from './VirtualOscilloscopeOverlay';
+import { ClockSourceTimingVisualizer } from './ClockSourceTimingVisualizer';
+import { ClockJitterSimulator } from './ClockJitterSimulator';
+import { TimerCounterPrescalerSimulator } from './TimerCounterPrescalerSimulator';
 import { InstructionPipelineVisualizer } from './InstructionPipelineVisualizer';
 import { InstructionExecutionTimeProfiler } from './InstructionExecutionTimeProfiler';
 import { InstructionCycleEstimator } from './InstructionCycleEstimator';
@@ -463,6 +468,16 @@ export const ArchitectureTab: React.FC<Props> = ({
         <BusTimingSimulator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
       </div>
 
+      {/* SRAM/Flash Memory Map Visualizer (Data Space, I/O Space, Program Flash & Bootloader-Enabled Layout Toggle) */}
+      <div id="sram-flash-memory-map-visualizer-section" className="scroll-mt-20">
+        <SramFlashMemoryMapVisualizer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* MCU Memory Space Visualizer (Flash, SRAM, IO Memory Distinct Map Visualizer) */}
+      <div id="mcu-memory-space-visualizer-section" className="scroll-mt-20">
+        <McuMemorySpaceVisualizer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
       {/* Memory Map Explorer (Interactive Address Spaces & Overflow Allocation Debugger) */}
       <div id="memory-map-explorer-section" className="scroll-mt-20">
         <MemoryMapExplorer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
@@ -485,6 +500,19 @@ export const ArchitectureTab: React.FC<Props> = ({
 
       {/* Interrupt Response Time Estimator (CPU Frequency, Instruction Count & Nested ISR Max Latency) */}
       <InterruptResponseTimeEstimator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Clock Source & Timing Visualizer (Clock Source, Frequency, Instruction Timing & Timer Prescalers) */}
+      <ClockSourceTimingVisualizer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Clock Jitter Simulator (Clock Source Accuracy, Frequency Stability, USART Error Rates & Signal Integrity) */}
+      <div id="clock-jitter-simulator-section" className="scroll-mt-20">
+        <ClockJitterSimulator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* Timer/Counter Prescaler Simulator (System Clock, Prescaler Settings, Overflow Frequency & Waveform) */}
+      <div id="timer-counter-prescaler-simulator-section" className="scroll-mt-20">
+        <TimerCounterPrescalerSimulator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
 
       {/* Instruction Pipeline Visualizer (D3.js Animated Fetch-Decode-Execute Flow & Throughput) */}
       <InstructionPipelineVisualizer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />

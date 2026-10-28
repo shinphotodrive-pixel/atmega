@@ -10,6 +10,9 @@ import { SimplePowerCalculator } from './SimplePowerCalculator';
 import { DynamicPowerConsumptionCalculator } from './DynamicPowerConsumptionCalculator';
 import { ThermalDissipationEstimator } from './ThermalDissipationEstimator';
 import { AvrPowerConsumptionSimulator } from './AvrPowerConsumptionSimulator';
+import { PowerScenarioSimulator } from './PowerScenarioSimulator';
+import { McuErrataResolver } from './McuErrataResolver';
+import { ErrataTracker } from './ErrataTracker';
 
 interface Props {
   selectedMCU: SupportedMCU;
@@ -214,6 +217,9 @@ export const PowerAndFusesTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) 
           </div>
         </div>
       </div>
+
+      {/* Power Scenario Simulator (전력 시나리오 시뮬레이터: 클록, 전압, 주변장치 활성화 기반 실시간 소모 전류 추정) */}
+      <PowerScenarioSimulator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
 
       {/* Dynamic Power Consumption Calculator (Clock Frequency MHz & Operating Voltage V to Estimate Typ. Active & Idle mA) */}
       <DynamicPowerConsumptionCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
@@ -559,114 +565,16 @@ export const PowerAndFusesTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) 
         onToggleBootrst={setBootrst}
       />
 
-      {/* Silicon Errata Table */}
-      <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 backdrop-blur shadow-lg space-y-4">
-        <h3 className="text-base font-bold text-white flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-amber-400" />
-          공식 실리콘 에라타(Silicon Errata) 분석 & 펌웨어 회피책 ({currentProfile.name})
-        </h3>
+      {/* Hardware Errata Tracker (실시간 에라타 검색 및 시각화 트래커) */}
+      <ErrataTracker selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
 
-        <div className="overflow-x-auto rounded-xl border border-slate-800">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950 text-slate-400 uppercase tracking-wider text-[11px] border-b border-slate-800">
-              <tr>
-                <th className="px-4 py-3">에라타 결함 항목</th>
-                <th className="px-4 py-3">결함 현상 및 발생 원인</th>
-                <th className="px-4 py-3">펌웨어 / 회로 회피 해결책 (Workaround)</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60 bg-slate-950/50">
-              {selectedMCU === 'atmega128' ? (
-                <>
-                  <tr className="hover:bg-slate-900/60">
-                    <td className="px-4 py-3 font-bold text-rose-400 font-mono">
-                      M103C 모드 기본 활성화로 인한 Extended I/O 비활성화
-                    </td>
-                    <td className="px-4 py-3 text-slate-300">
-                      출고 시 M103C 퓨즈가 0으로 프로그램되어 있어 ATmega103 호환 모드로 동작, Extended SFR 영역이 봉쇄됨.
-                    </td>
-                    <td className="px-4 py-3 text-emerald-300">
-                      칩 수령 즉시 ISP로 Extended Fuse Bit 1 (M103C)을 1(Unprogrammed)로 재기록하여 네이티브 모드로 강제 전환.
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-slate-900/60">
-                    <td className="px-4 py-3 font-bold text-rose-400 font-mono">
-                      ISP 프로그래밍 핀 미일치 문제 (SPI PB0~3 vs PE0/1)
-                    </td>
-                    <td className="px-4 py-3 text-slate-300">
-                      다른 AVR과 달리 SPI 데이터 선이 아닌 Port E의 PDI(PE0)와 PDO(PE1) 핀으로 ISP를 수행해야 함.
-                    </td>
-                    <td className="px-4 py-3 text-emerald-300">
-                      PCB 아트워크 제작 시 ISP 6핀 헤더의 MOSI를 PE0(PDI), MISO를 PE1(PDO)에 정확히 배선할 것.
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-slate-900/60">
-                    <td className="px-4 py-3 font-bold text-amber-400 font-mono">
-                      초기 실리콘 버전 아날로그 비교기 인터럽트 플래그 타이밍
-                    </td>
-                    <td className="px-4 py-3 text-slate-300">
-                      ACSR 레지스터 모드 변경 시 허위 인터럽트 플래그가 세트되는 현상.
-                    </td>
-                    <td className="px-4 py-3 text-emerald-300">
-                      ACSR 모드 변경 전 ACIE를 끄고 모드 설정 후 ACINT 플래그를 수동 클리어하고 인터럽트 재활성화.
-                    </td>
-                  </tr>
-                </>
-              ) : selectedMCU === 'atmega328p' ? (
-                <>
-                  <tr className="hover:bg-slate-900/60">
-                    <td className="px-4 py-3 font-bold text-rose-400 font-mono">
-                      Optiboot 부트로더 WDT 무한 리셋 루프 버그 (구버전)
-                    </td>
-                    <td className="px-4 py-3 text-slate-300">
-                      Watchdog Timer로 리셋 후 기동 시 WDT 플래그가 유지되어 부트로더 진입 즉시 다시 리셋되는 무한 루프.
-                    </td>
-                    <td className="px-4 py-3 text-emerald-300">
-                      MCUdude MiniCore 또는 최신 Optiboot v8+를 사용하여 MCUSR 백업 후 WDT 즉시 초기화 루틴 탑재.
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-slate-900/60">
-                    <td className="px-4 py-3 font-bold text-amber-400 font-mono">
-                      ADC 채널 8 (내부 온도 센서) 편차 및 캘리브레이션
-                    </td>
-                    <td className="px-4 py-3 text-slate-300">
-                      내부 1.1V Bandgap 레퍼런스 및 내부 온도 센서의 실리콘별 제조 편차가 ±10°C 수준으로 큼.
-                    </td>
-                    <td className="px-4 py-3 text-emerald-300">
-                      단일 지점 또는 2지점 오프셋 캘리브레이션 계수를 EEPROM에 기록하여 펌웨어에서 보정 연산.
-                    </td>
-                  </tr>
-                </>
-              ) : (
-                <>
-                  <tr className="hover:bg-slate-900/60">
-                    <td className="px-4 py-3 font-bold text-rose-400 font-mono">
-                      ADC 200x Gain 차동 모드 정밀도 저하
-                    </td>
-                    <td className="px-4 py-3 text-slate-300">
-                      내부 아날로그 차동 증폭기의 오프셋 전압 드리프트 및 노이즈로 200배 게인 사용 시 오차 증폭.
-                    </td>
-                    <td className="px-4 py-3 text-emerald-300">
-                      외장 저잡음 정밀 연산 증폭기(Op-Amp)를 추가하고 ADC는 단일 종단(Single-ended) 모드로 입력.
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-slate-900/60">
-                    <td className="px-4 py-3 font-bold text-amber-400 font-mono">
-                      비동기 타이머2 절전 모드 복귀 시 미세 누설 전류
-                    </td>
-                    <td className="px-4 py-3 text-slate-300">
-                      TOSC 비동기 클럭을 사용하는 Timer2 구동 중 슬립 모드 진입 시 레지스터 동기화 래치 지연.
-                    </td>
-                    <td className="px-4 py-3 text-emerald-300">
-                      Power-down 진입 직전 ASSR 레지스터의 비지 비트(TCR2BUB, TCN2UB)가 0인지 확인 후 슬립 실행.
-                    </td>
-                  </tr>
-                </>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/* MCU Errata Resolver (에라타 해결사) */}
+      <McuErrataResolver
+        selectedMCU={selectedMCU}
+        onSelectMCU={onSelectMCU}
+        m103cFuseState={m103cDisabled}
+        onToggleM103c={setM103cDisabled}
+      />
     </div>
   );
 };

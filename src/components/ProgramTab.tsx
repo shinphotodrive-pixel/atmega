@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { SupportedMCU, MCU_PROFILES } from '../data/pinmapData';
 import { MakefileGenerator } from './MakefileGenerator';
 import { PeripheralInitGenerator } from './PeripheralInitGenerator';
+import { CodeTemplateGenerator } from './CodeTemplateGenerator';
 import { FirmwareBuildStatus } from './FirmwareBuildStatus';
 import { CompilerOptimizationAnalyzer } from './CompilerOptimizationAnalyzer';
 import { InterruptVectorTableGenerator } from './InterruptVectorTableGenerator';
@@ -13,6 +14,7 @@ import { BootloaderManager } from './BootloaderManager';
 import { OptibootBuildConfigurator } from './OptibootBuildConfigurator';
 import { BootloaderSelectorConfig } from './BootloaderSelectorConfig';
 import { ProgramMemoryMapVisualizer } from './ProgramMemoryMapVisualizer';
+import { BuildConfigurator } from './BuildConfigurator';
 import {
   Download,
   Terminal,
@@ -567,6 +569,9 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
                 {currentProfile.name}
               </span>
               <span className="px-2.5 py-0.5 rounded-md bg-cyan-950/60 text-cyan-300 border border-cyan-800/40 text-xs font-mono font-bold flex items-center gap-1">
+                <FileCode2 className="w-3.5 h-3.5" /> 기본 C/C++ 코드 템플릿 제너레이터
+              </span>
+              <span className="px-2.5 py-0.5 rounded-md bg-cyan-950/60 text-cyan-300 border border-cyan-800/40 text-xs font-mono font-bold flex items-center gap-1">
                 <FileCode2 className="w-3.5 h-3.5" /> 주변장치 초기화 C 헤더 생성기
               </span>
               <span className="px-2.5 py-0.5 rounded-md bg-cyan-950/60 text-cyan-300 border border-cyan-800/40 text-xs font-mono font-bold flex items-center gap-1">
@@ -602,12 +607,15 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
               <span className="px-2.5 py-0.5 rounded-md bg-cyan-950/60 text-cyan-300 border border-cyan-800/40 text-xs font-mono font-bold flex items-center gap-1">
                 <PieChart className="w-3.5 h-3.5" /> 메모리 맵 시각화 도구 (Flash & SRAM 도넛 차트)
               </span>
+              <span className="px-2.5 py-0.5 rounded-md bg-cyan-950/60 text-cyan-300 border border-cyan-800/40 text-xs font-mono font-bold flex items-center gap-1">
+                <FileCode2 className="w-3.5 h-3.5" /> 빌드 구성 도구 (Makefile & CMakeLists.txt)
+              </span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
               AVR 펌웨어 다운로드 & ISP 프로그래머 배선 가이드
             </h2>
             <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-3xl leading-relaxed">
-              USBasp, Arduino as ISP, UART 부트로더(Optiboot) 빌더 및 설정 도구, Atmel-ICE 등 다양한 하드웨어 프로그래머를 사용한 핀 결선법과 툴체인별 플래싱 절차, Flash 및 SRAM 섹션별 메모리 맵 도넛 차트 시각화, 타이머/카운터 설정 시뮬레이터, 시리얼 프로토콜 데이터 로거, Flash/EEPROM 무결성 검증 CRC-16 계산기, 인터럽트 벡터 테이블 기반 ISR 코드 생성기, 컴파일러 플래그 Makefile 생성기 및 대화형 avrdude 명령어 생성기를 제공합니다.
+              USBasp, Arduino as ISP, UART 부트로더(Optiboot) 빌더 및 설정 도구, Atmel-ICE 등 다양한 하드웨어 프로그래머를 사용한 핀 결선법과 툴체인별 플래싱 절차, Flash 및 SRAM 섹션별 메모리 맵 도넛 차트 시각화, 타이머/카운터 설정 시뮬레이터, 시리얼 프로토콜 데이터 로거, Flash/EEPROM 무결성 검증 CRC-16 계산기, 인터럽트 벡터 테이블 기반 ISR 코드 생성기, Makefile 및 CMakeLists.txt 빌드 구성 템플릿 생성기 및 대화형 avrdude 명령어 생성기를 제공합니다.
             </p>
           </div>
 
@@ -946,6 +954,36 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         </div>
 
         <PeripheralInitGenerator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* Section: Code Template Generator (기본 C/C++ 펌웨어 소스 코드 템플릿 제너레이터) */}
+      <div id="code-template-generator-section" className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+            <Code2 className="w-4 h-4 text-cyan-400" />
+            기본 C/C++ 펌웨어 소스 코드 템플릿 제너레이터 (Firmware Code Template Generator)
+          </span>
+          <span className="text-[11px] text-cyan-400 bg-cyan-950/60 px-2.5 py-0.5 rounded-full border border-cyan-800/40 font-mono">
+            GPIO • 타이머 • 인터럽트 • USART • Baremetal / C++ / Event-driven • One-Click Copy
+          </span>
+        </div>
+
+        <CodeTemplateGenerator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* Section: Build Configuration Tool (Makefile & CMakeLists.txt Generator) */}
+      <div id="build-configuration-section" className="space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+            <FileCode2 className="w-4 h-4 text-cyan-400" />
+            빌드 구성 도구 (Build Configuration - Makefile & CMakeLists.txt Generator)
+          </span>
+          <span className="text-[11px] text-cyan-400 bg-cyan-950/60 px-2.5 py-0.5 rounded-full border border-cyan-800/40 font-mono">
+            Makefile • CMakeLists.txt • -Os / -O2 / -O3 / -O0 • LTO & GC • Dynamic MCU
+          </span>
+        </div>
+
+        <BuildConfigurator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
       </div>
 
       {/* Section 5: Production AVR-GCC Makefile Generator */}

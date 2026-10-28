@@ -19,7 +19,8 @@ import {
   ChevronUp,
   Sliders,
   Sparkles,
-  Info
+  Info,
+  X
 } from 'lucide-react';
 import { SupportedMCU, MCU_PROFILES } from '../data/pinmapData';
 
@@ -405,6 +406,70 @@ void usart_init_115200_u2x(void) {
 }`,
     codeLanguage: 'c',
     explanation: 'UCSR0A의 `U2X0` 비트를 1로 설정하여 8배 오버샘플링 2배속 모드를 적용하면 보드레이트 분주 계수가 16에서 17로 정밀해져 오차율이 통신 허용 범위 내로 진입합니다.'
+  },
+  {
+    id: 'ERR-328P-BOD-04',
+    mcu: ['atmega328p', 'atmega640', 'atmega2560'],
+    category: 'power_wdt',
+    categoryLabel: '전원 & BOD 퓨즈',
+    title: '전원 차단(Power-down) 과도기 중 BOD 미설정 시 내부 EEPROM 0번지 영구 데이터 손상',
+    severity: 'critical',
+    siliconRev: 'All Silicon Revisions',
+    datasheetRef: 'ATmega328P Errata §33.2 & AVR180: External Brown-out Protection',
+    symptom: '전원 공급이 서서히 꺼지는 과정(Slow VCC ramp down)에서 VCC가 최저 동작 전압 아래로 떨어질 때 CPU가 불완전 명령어를 실행하여 EEPROM 번지(특히 0x0000)를 0xFF 또는 임의의 가비지 값으로 덮어씀.',
+    rootCause: 'BOD(Brown-out Detector) 퓨즈가 해제(Disabled)되어 있으면 전원 전압 강하 시 CPU 리셋이 즉시 걸리지 않고 미규정 전압에서 비정상 명령어가 실행됨.',
+    hardwareFix: 'BODLEVEL 퓨즈를 시스템 전압에 맞게 2.7V 또는 4.3V로 반드시 프로그래밍하고, VCC-GND 간 100nF 바이패스 커패시터를 최단 거리 배치.',
+    workaroundCodeSnippet: `// [회피책] 안전한 EEPROM 기록 프로토콜 및 더미 0번지 예약
+#include <avr/io.h>
+#include <avr/eeprom.h>
+
+// 1. EEPROM 0번지는 손상 위험이 가장 높으므로 더미 바이트로 비워둠
+EEMEM uint8_t dummy_unused_byte = 0xAA;
+EEMEM uint16_t real_system_config = 100;
+
+void safe_eeprom_write_word(uint16_t *addr, uint16_t value) {
+    // 2. 기록 중 인터럽트 오염 방지
+    cli();
+    // 3. 이전 기록 완료 대기
+    eeprom_busy_wait();
+    // 4. 값 변경이 있을 때만 실제 EEPROM 셀 쓰기 (Update 방식)
+    eeprom_update_word(addr, value);
+    sei();
+}
+// 추천 퓨즈: Extended Fuse = 0xFD (BODLEVEL = 2.7V)`,
+    codeLanguage: 'c',
+    explanation: 'BOD 퓨즈를 반드시 2.7V(또는 4.3V)로 설정하고, 펌웨어적으로 EEPROM 0번지를 시스템 변수로 사용하지 않도록 더미 변수로 예약하여 파워오프 시의 데이터 오염을 차단합니다.'
+  },
+  {
+    id: 'ERR-128-ASSR-04',
+    mcu: ['atmega128'],
+    category: 'power_wdt',
+    categoryLabel: 'RTC 타이머 & 슬립',
+    title: '비동기 32.768kHz Timer0 구동 시 ASSR 비지(Busy) 플래그 미확인 후 슬립 진입 시 락업',
+    severity: 'major',
+    siliconRev: 'All Revisions',
+    datasheetRef: 'ATmega128A Datasheet §17.9 & Asynchronous Operation of Timer/Counter0',
+    symptom: 'TOSC1/2 핀에 32.768kHz RTC 크리스탈을 연결하여 비동기 모드로 운용 중 TCCR0 또는 OCR0를 수정한 직후 Power-save 슬립 모드로 진입하면 타이머가 깨어나지 않거나 값이 증발함.',
+    rootCause: 'CPU 메인 클럭(예: 16MHz)과 비동기 타이머 클럭(32.768kHz) 간의 클럭 도메인 동기화 지연(최대 3 비동기 클럭 주기 소요).',
+    hardwareFix: 'TOSC1/2 핀 부하 커패시터(12~22pF)를 정확히 매칭하여 32.768kHz 크리스탈 발진 안정도 확보.',
+    workaroundCodeSnippet: `// [회피책] ASSR 비지 비트 3종 완전 소거 대기 시퀀스
+#include <avr/io.h>
+#include <avr/sleep.h>
+
+void safe_enter_power_save(void) {
+    // 1. 비동기 타이머 레지스터 쓰기 후 동기화 대기
+    // TCN0UB, OCR0UB, TCR0UB 비트가 모두 0이 될 때까지 폴링
+    while (ASSR & (_BV(TCN0UB) | _BV(OCR0UB) | _BV(TCR0UB)));
+
+    // 2. 안전하게 Power-save 슬립 진입
+    set_sleep_mode(SLEEP_MODE_PWR_SAVE);
+    sleep_enable();
+    sei();
+    sleep_cpu();
+    sleep_disable();
+}`,
+    codeLanguage: 'c',
+    explanation: '비동기 타이머 레지스터를 변경한 후에는 ASSR 레지스터의 업데이트 비지(UB) 비트들이 0으로 복귀하여 동기화가 완료될 때까지 대기한 후 슬립 모드에 진입해야 합니다.'
   }
 ];
 
@@ -509,31 +574,55 @@ export const ErrataTracker: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => 
         )}
       </div>
 
-      {/* Quick Silicon Health / Summary Status Strip */}
+      {/* Quick Silicon Health / Summary Status Strip (Clickable Interactive Severity Filters) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 flex items-center justify-between">
+        <button
+          onClick={() => setSeverityFilter('all')}
+          className={`p-3.5 rounded-xl border flex items-center justify-between text-left transition-all ${
+            severityFilter === 'all'
+              ? 'bg-slate-900 border-amber-400 ring-2 ring-amber-400/30 shadow-md'
+              : 'bg-slate-950 border-slate-800 hover:border-slate-700'
+          }`}
+          title="모든 심각도 에라타 보기"
+        >
           <div>
             <div className="text-[11px] text-slate-400">등록된 공식 에라타</div>
             <div className="text-xl font-black text-white font-mono mt-0.5">{stats.total}개 결함</div>
           </div>
           <AlertTriangle className="w-5 h-5 text-amber-400" />
-        </div>
+        </button>
 
-        <div className="bg-slate-950 p-3.5 rounded-xl border border-rose-500/30 bg-rose-500/5 flex items-center justify-between">
+        <button
+          onClick={() => setSeverityFilter(severityFilter === 'critical' ? 'all' : 'critical')}
+          className={`p-3.5 rounded-xl border flex items-center justify-between text-left transition-all ${
+            severityFilter === 'critical'
+              ? 'bg-rose-950/40 border-rose-400 ring-2 ring-rose-400/30 shadow-md'
+              : 'bg-slate-950 border-rose-500/30 bg-rose-500/5 hover:border-rose-400/50'
+          }`}
+          title="치명적 결함(Critical)만 필터링"
+        >
           <div>
             <div className="text-[11px] text-rose-300">치명적 결함 (Critical)</div>
             <div className="text-xl font-black text-rose-400 font-mono mt-0.5">{stats.critical}개</div>
           </div>
           <Bug className="w-5 h-5 text-rose-400" />
-        </div>
+        </button>
 
-        <div className="bg-slate-950 p-3.5 rounded-xl border border-amber-500/30 bg-amber-500/5 flex items-center justify-between">
+        <button
+          onClick={() => setSeverityFilter(severityFilter === 'major' ? 'all' : 'major')}
+          className={`p-3.5 rounded-xl border flex items-center justify-between text-left transition-all ${
+            severityFilter === 'major'
+              ? 'bg-amber-950/40 border-amber-400 ring-2 ring-amber-400/30 shadow-md'
+              : 'bg-slate-950 border-amber-500/30 bg-amber-500/5 hover:border-amber-400/50'
+          }`}
+          title="주요 결함(Major)만 필터링"
+        >
           <div>
             <div className="text-[11px] text-amber-300">주요 결함 (Major)</div>
             <div className="text-xl font-black text-amber-400 font-mono mt-0.5">{stats.major}개</div>
           </div>
           <Activity className="w-5 h-5 text-amber-400" />
-        </div>
+        </button>
 
         <div className="bg-slate-950 p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-500/5 flex items-center justify-between">
           <div>
@@ -570,16 +659,25 @@ export const ErrataTracker: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => 
           ))}
         </div>
 
-        {/* Search */}
+        {/* Search with Clear Button */}
         <div className="relative min-w-[240px]">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-500" />
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <input
             type="text"
-            placeholder="에라타 검색 (ADC, USART, WDT...)"
+            placeholder="에라타 검색 (ADC, USART, WDT, RAMPZ...)"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+            className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 font-mono"
           />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-0.5 rounded"
+              title="검색어 초기화"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 
