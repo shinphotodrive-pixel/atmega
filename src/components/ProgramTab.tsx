@@ -9,8 +9,11 @@ import { InterruptVectorTableGenerator } from './InterruptVectorTableGenerator';
 import { AvrdudeCommandReference } from './AvrdudeCommandReference';
 import { FirmwareCrcIntegrityCalculator } from './FirmwareCrcIntegrityCalculator';
 import { SerialProtocolDataLogger } from './SerialProtocolDataLogger';
+import { UartSpiLoggingSimulator } from './UartSpiLoggingSimulator';
 import { TimerCounterSimulator } from './TimerCounterSimulator';
 import { BootloaderManager } from './BootloaderManager';
+import { BootloaderConfigManager } from './BootloaderConfigManager';
+import { ArduinoOptibootConfigGenerator } from './ArduinoOptibootConfigGenerator';
 import { OptibootBuildConfigurator } from './OptibootBuildConfigurator';
 import { BootloaderSelectorConfig } from './BootloaderSelectorConfig';
 import { ProgramMemoryMapVisualizer } from './ProgramMemoryMapVisualizer';
@@ -1091,6 +1094,11 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         <SerialProtocolDataLogger selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
       </div>
 
+      {/* UART/SPI Real-time Logging Simulator & Lightweight Macro Generator (printf() Alternative) */}
+      <div id="uart-spi-logging-simulator-section" className="space-y-4 scroll-mt-20">
+        <UartSpiLoggingSimulator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
       {/* Section 12: AVR Timer/Counter Configuration Simulator & TCCR Register Builder */}
       <div id="timer-counter-simulator-section" className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -1104,6 +1112,21 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         </div>
 
         <TimerCounterSimulator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* 부트로더 설정 관리자 (Optiboot, Arduino 공식, 커스텀 HEX 선택, 점유 메모리 및 퓨즈 비트 자동 계산) */}
+      <div id="bootloader-config-manager-section" className="space-y-4 scroll-mt-20">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+            <HardDrive className="w-4 h-4 text-emerald-400" />
+            부트로더 설정 관리자 (Bootloader Configuration Manager)
+          </span>
+          <span className="text-[11px] text-emerald-400 bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-800/40 font-mono">
+            Optiboot • Arduino Official • Custom HEX • BOOTSZ & Fuses Auto-Calculation
+          </span>
+        </div>
+
+        <BootloaderConfigManager selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
       </div>
 
       {/* Section 13: Bootloader Manager (Optiboot vs Arduino & UART Auto-Baudrate Analyzer) */}
@@ -1134,6 +1157,11 @@ export const ProgramTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         </div>
 
         <BootloaderSelectorConfig selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* Optiboot & Standard Arduino Bootloader Configuration Generator */}
+      <div id="arduino-optiboot-config-generator-section" className="space-y-4 scroll-mt-20">
+        <ArduinoOptibootConfigGenerator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
       </div>
 
       {/* Section 15: AVR Optiboot Bootloader Configurator & Build Tool */}

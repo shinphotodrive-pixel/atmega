@@ -19,6 +19,7 @@ import { SupportedMCU, MCU_PROFILES } from '../data/pinmapData';
 
 interface Props {
   selectedMCU: SupportedMCU;
+  onSelectMCU?: (mcu: SupportedMCU) => void;
 }
 
 interface WdtPrescalerOption {
@@ -56,7 +57,7 @@ const CPU_CLOCK_PRESETS = [
   { fcpu: 20000000, label: '20.0 MHz (정격 최대 클럭)' }
 ];
 
-export const WatchdogTimeoutCalculator: React.FC<Props> = ({ selectedMCU }) => {
+export const WatchdogTimeoutCalculator: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
   const currentProfile = MCU_PROFILES[selectedMCU];
 
   // Hardware model checks
@@ -344,13 +345,13 @@ void get_mcusr(void) {
   };
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 sm:p-7 backdrop-blur shadow-2xl space-y-6">
+    <div id="watchdog-timer-configuration-calculator-section" className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 sm:p-7 backdrop-blur shadow-2xl space-y-6 scroll-mt-20">
       {/* Header */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
         <div>
           <div className="flex items-center gap-2 mb-2 flex-wrap">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold">
-              <ShieldAlert className="w-3.5 h-3.5" /> Watchdog Timer (WDT) Timeout Calculator
+              <ShieldAlert className="w-3.5 h-3.5" /> Watchdog Timer (WDT) Configuration Calculator
             </span>
             <span className="px-2.5 py-0.5 rounded-md bg-slate-800 text-slate-300 text-xs font-mono">
               MCU: {currentProfile.name}
@@ -360,25 +361,45 @@ void get_mcusr(void) {
             </span>
           </div>
           <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
-            워치독 타이머 (WDT) 타임아웃 & {registerName} 레지스터 계산기
+            Watchdog Timer (WDT) Configuration Calculator (워치독 타이머 설정 계산기)
           </h2>
           <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-3xl leading-relaxed">
-            독립 128 kHz 온칩 저전력 오실레이터의 분주비(WDP3:0)와 시스템 클럭(F_CPU)을 연동하여
-            <strong> 정확한 워치독 타임아웃 주기</strong>와 <strong>CPU 실행 여유 사이클</strong>을 계산하고,
-            4클럭 시간제한 시퀀스(Timed Sequence)에 부합하는 C 소스코드를 생성합니다.
+            워치독 타임아웃 주기(16ms ~ 8s)와 시스템 클록(F_CPU)을 선택하여 <strong>{registerName} 레지스터의 WDP3:0 분주비 및 WDE/WDIE 비트</strong>를 계산하고,
+            <strong> 시스템 리셋 모드(System Reset) vs 인터럽트 모드(Interrupt Mode)</strong> 설정을 지원합니다.
           </p>
         </div>
 
-        {/* Current Timeout Metric Badge */}
-        <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 text-right flex-shrink-0 min-w-[210px]">
-          <div className="text-[11px] text-slate-400 font-mono">유효 타임아웃 주기</div>
-          <div className="text-2xl font-mono font-black text-rose-400 mt-0.5">
-            {calculations.exactTimeoutMs >= 1000
-              ? `${(calculations.exactTimeoutMs / 1000).toFixed(2)} 초`
-              : `${calculations.exactTimeoutMs.toFixed(1)} ms`}
-          </div>
-          <div className="text-[11px] text-slate-400 mt-1">
-            공칭 스펙: <span className="font-mono text-amber-400 font-bold">{calculations.nominalTimeoutMs} ms</span>
+        <div className="flex items-center gap-3 flex-wrap">
+          {/* Quick MCU Switcher */}
+          {onSelectMCU && (
+            <div className="flex items-center gap-1 bg-slate-950/80 p-1.5 rounded-xl border border-slate-800 shrink-0">
+              {(['atmega2560', 'atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcuId) => (
+                <button
+                  key={mcuId}
+                  onClick={() => onSelectMCU(mcuId)}
+                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition ${
+                    selectedMCU === mcuId
+                      ? 'bg-rose-500 text-slate-950 shadow-md shadow-rose-500/20'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {MCU_PROFILES[mcuId].name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Current Timeout Metric Badge */}
+          <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-3.5 text-right flex-shrink-0 min-w-[210px]">
+            <div className="text-[11px] text-slate-400 font-mono">유효 타임아웃 주기</div>
+            <div className="text-2xl font-mono font-black text-rose-400 mt-0.5">
+              {calculations.exactTimeoutMs >= 1000
+                ? `${(calculations.exactTimeoutMs / 1000).toFixed(2)} 초`
+                : `${calculations.exactTimeoutMs.toFixed(1)} ms`}
+            </div>
+            <div className="text-[11px] text-slate-400 mt-1">
+              공칭 스펙: <span className="font-mono text-amber-400 font-bold">{calculations.nominalTimeoutMs} ms</span>
+            </div>
           </div>
         </div>
       </div>

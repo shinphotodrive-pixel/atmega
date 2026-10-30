@@ -576,8 +576,23 @@ void spi_master_init(void) {
               {/* Target Khz */}
               <div className="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 space-y-2">
                 <div className="flex justify-between items-center font-mono">
-                  <span className="text-slate-300 font-semibold">클럭 주파수 (fSCL):</span>
-                  <span className="text-cyan-400 font-bold">{i2cTargetKhz} kHz</span>
+                  <span className="text-slate-300 font-semibold">목표 클럭 주파수 (fSCL):</span>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={10}
+                      max={1000}
+                      step={10}
+                      value={i2cTargetKhz}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 10;
+                        setI2cTargetKhz(Math.max(10, Math.min(1000, val)));
+                        setI2cSpeedPreset('custom');
+                      }}
+                      className="w-16 px-1.5 py-0.5 rounded bg-slate-950 border border-slate-700 text-right text-cyan-400 font-bold text-xs"
+                    />
+                    <span className="text-cyan-400 font-bold text-[11px]">kHz</span>
+                  </div>
                 </div>
                 <input
                   type="range"
@@ -593,6 +608,7 @@ void spi_master_init(void) {
                 />
                 <div className="flex justify-between text-[10px] text-slate-500 font-mono">
                   <span>20 kHz</span>
+                  <span>실제: {i2cMetrics.actualKhz} kHz</span>
                   <span>1000 kHz</span>
                 </div>
               </div>
@@ -601,9 +617,23 @@ void spi_master_init(void) {
               <div className="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 space-y-2">
                 <div className="flex justify-between items-center font-mono">
                   <span className="text-slate-300 font-semibold">풀업 저항 (Rp):</span>
-                  <span className={`font-bold ${i2cMetrics.isRpTooLarge || i2cMetrics.isRpTooSmall ? 'text-rose-400' : 'text-amber-400'}`}>
-                    {i2cPullupKohm.toFixed(1)} kΩ
-                  </span>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={0.5}
+                      max={30.0}
+                      step={0.1}
+                      value={i2cPullupKohm}
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value) || 1.0;
+                        setI2cPullupKohm(Math.max(0.5, Math.min(30.0, val)));
+                      }}
+                      className={`w-16 px-1.5 py-0.5 rounded bg-slate-950 border border-slate-700 text-right font-bold text-xs ${
+                        i2cMetrics.isRpTooLarge || i2cMetrics.isRpTooSmall ? 'text-rose-400 border-rose-500' : 'text-amber-400'
+                      }`}
+                    />
+                    <span className="text-amber-400 font-bold text-[11px]">kΩ</span>
+                  </div>
                 </div>
                 <input
                   type="range"
@@ -624,10 +654,24 @@ void spi_master_init(void) {
               {/* Total Capacitance */}
               <div className="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 space-y-2">
                 <div className="flex justify-between items-center font-mono">
-                  <span className="text-slate-300 font-semibold">기생 부하 용량 (Cb):</span>
-                  <span className={`font-bold ${i2cMetrics.isCapViolation ? 'text-rose-400' : 'text-cyan-400'}`}>
-                    {i2cBusCapacitancePf} pF
-                  </span>
+                  <span className="text-slate-300 font-semibold">부하 커패시턴스 (Cb):</span>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={10}
+                      max={1000}
+                      step={10}
+                      value={i2cBusCapacitancePf}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 10;
+                        setI2cBusCapacitancePf(Math.max(10, Math.min(1000, val)));
+                      }}
+                      className={`w-16 px-1.5 py-0.5 rounded bg-slate-950 border border-slate-700 text-right font-bold text-xs ${
+                        i2cMetrics.isCapViolation ? 'text-rose-400 border-rose-500' : 'text-cyan-400'
+                      }`}
+                    />
+                    <span className="text-cyan-400 font-bold text-[11px]">pF</span>
+                  </div>
                 </div>
                 <input
                   type="range"
@@ -733,10 +777,25 @@ void spi_master_init(void) {
               </div>
 
               {/* Load Capacitance */}
+              {/* Load Capacitance */}
               <div className="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 space-y-2">
                 <div className="flex justify-between items-center font-mono">
-                  <span className="text-slate-300 font-semibold">부하 용량 (CLoad):</span>
-                  <span className="text-cyan-400 font-bold">{spiLoadCapacitancePf} pF</span>
+                  <span className="text-slate-300 font-semibold">부하 커패시턴스 (CLoad):</span>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={5}
+                      max={500}
+                      step={5}
+                      value={spiLoadCapacitancePf}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 5;
+                        setSpiLoadCapacitancePf(Math.max(5, Math.min(500, val)));
+                      }}
+                      className="w-16 px-1.5 py-0.5 rounded bg-slate-950 border border-slate-700 text-right text-cyan-400 font-bold text-xs"
+                    />
+                    <span className="text-cyan-400 font-bold text-[11px]">pF</span>
+                  </div>
                 </div>
                 <input
                   type="range"
@@ -758,7 +817,21 @@ void spi_master_init(void) {
               <div className="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800 space-y-2">
                 <div className="flex justify-between items-center font-mono">
                   <span className="text-slate-300 font-semibold">시리즈 댐핑 저항 (Rs):</span>
-                  <span className="text-amber-400 font-bold">{spiSeriesResistorOhm} Ω</span>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number"
+                      min={0}
+                      max={200}
+                      step={2}
+                      value={spiSeriesResistorOhm}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 0;
+                        setSpiSeriesResistorOhm(Math.max(0, Math.min(200, val)));
+                      }}
+                      className="w-16 px-1.5 py-0.5 rounded bg-slate-950 border border-slate-700 text-right text-amber-400 font-bold text-xs"
+                    />
+                    <span className="text-amber-400 font-bold text-[11px]">Ω</span>
+                  </div>
                 </div>
                 <input
                   type="range"

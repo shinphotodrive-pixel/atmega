@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { SupportedMCU, MCU_PROFILES } from '../data/pinmapData';
 import { getVectorTableByMCU, InterruptVector } from '../data/interruptVectorsData';
 import { InterruptVectorTableExplorer } from './InterruptVectorTableExplorer';
+import { InterruptExecutionTimeAnalyzer } from './InterruptExecutionTimeAnalyzer';
+import { StackDepthAnalyzer } from './StackDepthAnalyzer';
 import {
   Zap,
   Activity,
@@ -48,8 +50,9 @@ export const InterruptsTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => 
   const currentProfile = MCU_PROFILES[selectedMCU];
   const allVectors = useMemo(() => getVectorTableByMCU(selectedMCU), [selectedMCU]);
 
-  // Sub-tab selection: 'ivt' (Vector Table) vs 'collision' (Vector Collision & Race Debugger) vs 'architecture' (Timing & Hardware Specs)
-  const [subTab, setSubTab] = useState<'ivt' | 'collision' | 'architecture'>('ivt');
+  // Sub-tab selection: 'ivt' (Vector Table) vs 'timing' (Execution Time & Context Switch Analyzer) vs 'collision' vs 'stack' vs 'architecture'
+  const [subTab, setSubTab] = useState<'ivt' | 'timing' | 'collision' | 'stack' | 'architecture'>('ivt');
+  const [selectedTimingVector, setSelectedTimingVector] = useState<string>('INT0_vect');
 
   // -------------------------------------------------------------
   // Collision Debugger State
@@ -315,6 +318,20 @@ void loop_process_safe(void) {
             전체 벡터 테이블 (IVT) 탐색기
           </button>
           <button
+            onClick={() => setSubTab('timing')}
+            className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${
+              subTab === 'timing'
+                ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <Clock className="w-4 h-4 text-cyan-400" />
+            인터럽트 처리 시간 & 문맥 전환 분석기
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+              Latency & Cycles
+            </span>
+          </button>
+          <button
             onClick={() => setSubTab('collision')}
             className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${
               subTab === 'collision'
@@ -326,6 +343,20 @@ void loop_process_safe(void) {
             벡터 충돌 & 우선순위 경합 디버거
             <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-red-500/20 text-red-400 border border-red-500/30">
               Collision Simulator
+            </span>
+          </button>
+          <button
+            onClick={() => setSubTab('stack')}
+            className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all flex items-center gap-2 whitespace-nowrap ${
+              subTab === 'stack'
+                ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
+            }`}
+          >
+            <Layers className="w-4 h-4 text-rose-400" />
+            인터럽트 & 스택 오버플로우 디버거
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono bg-rose-500/20 text-rose-400 border border-rose-500/30">
+              Stack Overflow Debugger
             </span>
           </button>
           <button
@@ -344,7 +375,25 @@ void loop_process_safe(void) {
 
       {/* SUB-TAB 1: IVT Vector Table Explorer */}
       {subTab === 'ivt' && (
-        <InterruptVectorTableExplorer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+        <InterruptVectorTableExplorer
+          selectedMCU={selectedMCU}
+          onSelectMCU={onSelectMCU}
+          onNavigateToTiming={(vectorName) => {
+            setSelectedTimingVector(vectorName);
+            setSubTab('timing');
+          }}
+        />
+      )}
+
+      {/* SUB-TAB 2: Interrupt Vector Execution Time & Context Switching Analyzer */}
+      {subTab === 'timing' && (
+        <div id="interrupt-execution-time-analyzer-section" className="scroll-mt-20">
+          <InterruptExecutionTimeAnalyzer
+            selectedMCU={selectedMCU}
+            onSelectMCU={onSelectMCU}
+            initialVectorName={selectedTimingVector}
+          />
+        </div>
       )}
 
       {/* SUB-TAB 2: Vector Collision & Race Condition Debugger */}
@@ -748,7 +797,12 @@ void process_events(void) {
         </div>
       )}
 
-      {/* SUB-TAB 3: Hardware Timing & Latency Specs */}
+      {/* SUB-TAB 4: Stack Depth & Overflow Analyzer */}
+      {subTab === 'stack' && (
+        <StackDepthAnalyzer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      )}
+
+      {/* SUB-TAB 5: Hardware Timing & Latency Specs */}
       {subTab === 'architecture' && (
         <div className="space-y-6">
           {/* Hardware Lifecycle Pipeline Diagram */}

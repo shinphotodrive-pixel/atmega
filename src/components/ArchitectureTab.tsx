@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Cpu, Zap, Layers, Activity, CheckCircle, BarChart3, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { Cpu, Zap, Layers, Activity, CheckCircle, BarChart3, AlertTriangle, ShieldCheck, Radio } from 'lucide-react';
 import { MCU_PROFILES, SupportedMCU } from '../data/pinmapData';
 import { PeripheralSignalVisualizer } from './PeripheralSignalVisualizer';
 import { PeripheralPinMappingDashboard } from './PeripheralPinMappingDashboard';
@@ -241,6 +241,51 @@ export const ArchitectureTab: React.FC<Props> = ({
               <span>{strength}</span>
             </div>
           ))}
+        </div>
+
+        {/* Quick Simulator Jump Bar */}
+        <div className="mt-4 pt-3.5 border-t border-slate-800/80 flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-slate-400 font-mono text-[11px]">실시간 타이밍 도구:</span>
+          <button
+            onClick={() => {
+              const el = document.getElementById('instruction-pipeline-visualizer-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            className="px-3 py-1.5 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/35 transition flex items-center gap-1.5 font-bold shadow-sm"
+          >
+            <Cpu className="w-3.5 h-3.5 text-purple-400" />
+            <span>2단계 명령어 파이프라인 시각화기</span>
+          </button>
+          <button
+            onClick={() => {
+              const el = document.getElementById('bus-timing-simulator-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            className="px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/35 transition flex items-center gap-1.5 font-bold shadow-sm"
+          >
+            <Radio className="w-3.5 h-3.5" />
+            <span>I2C / SPI 버스 타이밍 시뮬레이터</span>
+          </button>
+          <button
+            onClick={() => {
+              const el = document.getElementById('virtual-oscilloscope-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            className="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition flex items-center gap-1.5 font-medium"
+          >
+            <Activity className="w-3.5 h-3.5 text-emerald-400" />
+            <span>가상 오실로스코프</span>
+          </button>
+          <button
+            onClick={() => {
+              const el = document.getElementById('gpio-visualizer-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            className="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition flex items-center gap-1.5 font-medium"
+          >
+            <Zap className="w-3.5 h-3.5 text-amber-400" />
+            <span>GPIO 신호 분석기</span>
+          </button>
         </div>
       </div>
 
@@ -515,7 +560,9 @@ export const ArchitectureTab: React.FC<Props> = ({
       </div>
 
       {/* Instruction Pipeline Visualizer (D3.js Animated Fetch-Decode-Execute Flow & Throughput) */}
-      <InstructionPipelineVisualizer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      <div id="instruction-pipeline-visualizer-section" className="scroll-mt-20">
+        <InstructionPipelineVisualizer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
 
       {/* Instruction Execution Time Profiler (Cycle & Nanosecond Latency Analyzer for C & Assembly) */}
       <InstructionExecutionTimeProfiler selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />

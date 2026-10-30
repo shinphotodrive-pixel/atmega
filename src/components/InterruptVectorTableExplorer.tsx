@@ -20,18 +20,20 @@ import {
   ArrowRight,
   Info,
   RotateCcw,
-  BookOpen
+  BookOpen,
+  Clock
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface Props {
   selectedMCU: SupportedMCU;
   onSelectMCU?: (mcu: SupportedMCU) => void;
+  onNavigateToTiming?: (vectorName: string) => void;
 }
 
 export type IsrExecutionMode = 'standard' | 'noblock' | 'naked' | 'empty';
 
-export const InterruptVectorTableExplorer: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
+export const InterruptVectorTableExplorer: React.FC<Props> = ({ selectedMCU, onSelectMCU, onNavigateToTiming }) => {
   const currentProfile = MCU_PROFILES[selectedMCU];
   const vectors = useMemo(() => getVectorTableByMCU(selectedMCU), [selectedMCU]);
 
@@ -526,13 +528,25 @@ ISR(${vec.vectorName}) {
             </div>
           </div>
 
-          <button
-            onClick={copyFullTemplate}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-md shadow-emerald-600/20 shrink-0"
-          >
-            {copiedTemplate ? <Check className="w-4 h-4 text-emerald-200" /> : <Copy className="w-4 h-4" />}
-            <span>{copiedTemplate ? '전체 코드 복사 완료!' : '전체 C 템플릿 복사'}</span>
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            {onNavigateToTiming && (
+              <button
+                type="button"
+                onClick={() => onNavigateToTiming(activeVector.vectorName)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-bold text-xs transition"
+              >
+                <Clock className="w-3.5 h-3.5 text-cyan-400" />
+                <span>처리 시간 & 문맥 전환 분석 &rarr;</span>
+              </button>
+            )}
+            <button
+              onClick={copyFullTemplate}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-md shadow-emerald-600/20"
+            >
+              {copiedTemplate ? <Check className="w-4 h-4 text-emerald-200" /> : <Copy className="w-4 h-4" />}
+              <span>{copiedTemplate ? '전체 코드 복사 완료!' : '전체 C 템플릿 복사'}</span>
+            </button>
+          </div>
         </div>
 
         {/* Generator Controls */}

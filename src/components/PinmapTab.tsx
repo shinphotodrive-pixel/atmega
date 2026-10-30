@@ -4,6 +4,9 @@ import { Search, Compass, Cpu, Layers, ExternalLink, Filter } from 'lucide-react
 import { PinMultiplexingConflictChecker } from './PinMultiplexingConflictChecker';
 import { GpioSignalLogicSimulator } from './GpioSignalLogicSimulator';
 import { PinoutDiagramViewer } from './PinoutDiagramViewer';
+import { RecommendedHardwareSchematicViewer } from './RecommendedHardwareSchematicViewer';
+import { PinMultiplexingSimulator } from './PinMultiplexingSimulator';
+import { GpioVoltageDropCalculator } from './GpioVoltageDropCalculator';
 
 interface Props {
   selectedMCU: SupportedMCU;
@@ -169,6 +172,24 @@ export const PinmapTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         onNavigateToPin={handleNavigateToPin}
       />
 
+      {/* 권장 하드웨어 회로도 뷰어 (전원부 Vcc/AVcc/GND, 리셋 회로, 16MHz 크리스탈 표준 결선도) */}
+      <div id="recommended-hardware-schematic-section" className="scroll-mt-20">
+        <RecommendedHardwareSchematicViewer
+          selectedMCU={selectedMCU}
+          onSelectMCU={onSelectMCU}
+          onNavigateToPin={handleNavigateToPin}
+        />
+      </div>
+
+      {/* 핀 멀티플렉싱 시뮬레이터 (Pin Multiplexing Simulator: 대체 기능 하이라이트 & 실시간 SFR 레지스터 비트 매핑) */}
+      <div id="pin-multiplexing-simulator-section" className="scroll-mt-20">
+        <PinMultiplexingSimulator
+          selectedMCU={selectedMCU}
+          onSelectMCU={onSelectMCU}
+          onNavigateToPin={handleNavigateToPin}
+        />
+      </div>
+
       {/* Pin Multiplexing Conflict Checker */}
       <PinMultiplexingConflictChecker
         selectedMCU={selectedMCU}
@@ -182,6 +203,15 @@ export const PinmapTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
         onSelectMCU={onSelectMCU}
         onNavigateToPin={handleNavigateToPin}
       />
+
+      {/* GPIO 전압 강하(Voltage Drop) 계산기 & 핀 손상 위험도 시각화 */}
+      <div id="gpio-voltage-drop-calculator-section" className="scroll-mt-20">
+        <GpioVoltageDropCalculator
+          selectedMCU={selectedMCU}
+          onSelectMCU={onSelectMCU}
+          onNavigateToPin={handleNavigateToPin}
+        />
+      </div>
 
       {/* Control Panel: Port Selector & Filters */}
       <div id="pin-table-section" className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 backdrop-blur shadow-lg space-y-4">

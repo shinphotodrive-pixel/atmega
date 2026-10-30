@@ -3,6 +3,7 @@ import { Zap, AlertTriangle, ShieldCheck, Terminal, Copy, Check, LifeBuoy } from
 import { SupportedMCU, MCU_PROFILES } from '../data/pinmapData';
 import { DynamicPowerConsumptionEstimator } from './DynamicPowerConsumptionEstimator';
 import { SleepModeEnergyAdvisor } from './SleepModeEnergyAdvisor';
+import { SleepModeDesignGuide } from './SleepModeDesignGuide';
 import { EnergyEstimator } from './EnergyEstimator';
 import { VoltageRegulatorPowerBudgeting } from './VoltageRegulatorPowerBudgeting';
 import { BootloaderSizeCalculator, BootloaderWordSize } from './BootloaderSizeCalculator';
@@ -13,6 +14,10 @@ import { AvrPowerConsumptionSimulator } from './AvrPowerConsumptionSimulator';
 import { PowerScenarioSimulator } from './PowerScenarioSimulator';
 import { McuErrataResolver } from './McuErrataResolver';
 import { ErrataTracker } from './ErrataTracker';
+import { MicrochipErrataLiveBrowser } from './MicrochipErrataLiveBrowser';
+import { AvrErrataPatternSearch } from './AvrErrataPatternSearch';
+import { EepromLifetimeCalculator } from './EepromLifetimeCalculator';
+import { McuPowerConsumptionAnalyzer } from './McuPowerConsumptionAnalyzer';
 
 interface Props {
   selectedMCU: SupportedMCU;
@@ -218,6 +223,11 @@ export const PowerAndFusesTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) 
         </div>
       </div>
 
+      {/* MCU 전력 소비 분석기 (클럭 주파수 F_CPU & 동작 전압 Vcc 기반 예상 소비 전류 mA 및 전력 소모량 mW 계산) */}
+      <div id="mcu-power-consumption-analyzer-section" className="scroll-mt-20">
+        <McuPowerConsumptionAnalyzer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
       {/* Power Scenario Simulator (전력 시나리오 시뮬레이터: 클록, 전압, 주변장치 활성화 기반 실시간 소모 전류 추정) */}
       <PowerScenarioSimulator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
 
@@ -236,6 +246,11 @@ export const PowerAndFusesTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) 
       {/* Sleep Mode Energy-Consumption Advisor (Idle, ADC Noise Reduction, Power-down, etc. & Peripherals) */}
       <SleepModeEnergyAdvisor selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
 
+      {/* 저전력(Sleep) 모드 설계 가이드 (대기전류 차트 & 5대 클럭 도메인 활성화 매트릭스) */}
+      <div id="sleep-mode-design-guide-section" className="scroll-mt-20">
+        <SleepModeDesignGuide selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
       {/* Energy Estimator Component (Dynamic mA, Power-down, Duty Cycle, Battery Life) */}
       <EnergyEstimator selectedMCU={selectedMCU} />
 
@@ -244,6 +259,11 @@ export const PowerAndFusesTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) 
 
       {/* Thermal Dissipation & Junction Temperature (TJ) Estimator based on θJA & Package Power */}
       <ThermalDissipationEstimator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* EEPROM 수명/내구성 계산기 (하루 예상 쓰기 횟수, 목표 서비스 연수, 100,000 W/E Cycles & 마모 레벨링 분석) */}
+      <div id="eeprom-lifetime-calculator-section" className="scroll-mt-20">
+        <EepromLifetimeCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
 
       {/* Voltage vs Frequency & Sleep Mode Row */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -564,6 +584,16 @@ export const PowerAndFusesTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) 
         bootrst={bootrst}
         onToggleBootrst={setBootrst}
       />
+
+      {/* AVR 에라타 데이터베이스 패턴 쿼리 & 코드 검색기 (Common AVR Errata Codes & Database Pattern Query) */}
+      <div id="avr-errata-pattern-search-section" className="scroll-mt-20">
+        <AvrErrataPatternSearch selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* Microchip 에라타(Errata) 실시간 브라우저 (실리콘 리비전별 결함, 회피책 Workarounds & 레지스터 설정 가이드) */}
+      <div id="microchip-errata-live-browser-section" className="scroll-mt-20">
+        <MicrochipErrataLiveBrowser selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
 
       {/* Hardware Errata Tracker (실시간 에라타 검색 및 시각화 트래커) */}
       <ErrataTracker selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />

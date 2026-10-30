@@ -3,6 +3,7 @@ import { Calculator, Copy, Check, Terminal, ShieldAlert, Cpu } from 'lucide-reac
 import { SupportedMCU, MCU_PROFILES } from '../data/pinmapData';
 import { MemoryMapD3Heatmap } from './MemoryMapD3Heatmap';
 import { CommTimingCalculator } from './CommTimingCalculator';
+import { AdcClockPrescalerCalculator } from './AdcClockPrescalerCalculator';
 import { AdcSamplingNoiseCalculator } from './AdcSamplingNoiseCalculator';
 import { AdcNoiseResolutionSimulator } from './AdcNoiseResolutionSimulator';
 import { InterruptVectorTableExplorer } from './InterruptVectorTableExplorer';
@@ -12,10 +13,14 @@ import { BuildSystemGenerator } from './BuildSystemGenerator';
 import { RegisterStatusDashboard } from './RegisterStatusDashboard';
 import { RegisterSnapshotSimulator } from './RegisterSnapshotSimulator';
 import { RegisterCodeSnippetGenerator } from './RegisterCodeSnippetGenerator';
+import { PeripheralInitFunctionGenerator } from './PeripheralInitFunctionGenerator';
+import { FirmwarePerformanceGuide } from './FirmwarePerformanceGuide';
 import { BitManipulationAssistant } from './BitManipulationAssistant';
+import { BitManipulationSandbox } from './BitManipulationSandbox';
 import { RegisterConfigComparator } from './RegisterConfigComparator';
 import { RegisterDeltaChecker } from './RegisterDeltaChecker';
 import { RegisterComparisonViewer } from './RegisterComparisonViewer';
+import { RegisterCompatibilityComparator } from './RegisterCompatibilityComparator';
 import { RegisterTimelineHistory } from './RegisterTimelineHistory';
 import { RegisterLogicSimulator } from './RegisterLogicSimulator';
 import { PeripheralRegisterTreeView } from './PeripheralRegisterTreeView';
@@ -85,12 +90,26 @@ export const RegistersTab: React.FC<Props> = ({
   const effectiveUsartFcpu = isCustomFcpuMode ? (parseFloat(usartCustomFcpu) || 16000000) : usartFcpu;
   const effectiveUsartBaud = isCustomBaudMode ? (parseInt(usartCustomBaud, 10) || 115200) : usartBaud;
 
-  // USART Calculation
-  const divisor = usartU2X ? 8 : 16;
-  const ubrrVal = Math.round(effectiveUsartFcpu / (divisor * effectiveUsartBaud) - 1);
-  const safeUbrr = ubrrVal < 0 ? 0 : Math.min(4095, ubrrVal);
-  const actualBaud = effectiveUsartFcpu / (divisor * (safeUbrr + 1));
-  const baudError = ((actualBaud - effectiveUsartBaud) / effectiveUsartBaud) * 100;
+  // USART Calculations for both Normal (U2X=0, 16x) and Double Speed (U2X=1, 8x)
+  const normalDivisor = 16;
+  const normalUbrrVal = Math.round(effectiveUsartFcpu / (normalDivisor * effectiveUsartBaud) - 1);
+  const normalSafeUbrr = normalUbrrVal < 0 ? 0 : Math.min(4095, normalUbrrVal);
+  const normalActualBaud = effectiveUsartFcpu / (normalDivisor * (normalSafeUbrr + 1));
+  const normalBaudError = ((normalActualBaud - effectiveUsartBaud) / effectiveUsartBaud) * 100;
+  const isNormalBaudErrorHigh = Math.abs(normalBaudError) > 2.0;
+
+  const doubleDivisor = 8;
+  const doubleUbrrVal = Math.round(effectiveUsartFcpu / (doubleDivisor * effectiveUsartBaud) - 1);
+  const doubleSafeUbrr = doubleUbrrVal < 0 ? 0 : Math.min(4095, doubleUbrrVal);
+  const doubleActualBaud = effectiveUsartFcpu / (doubleDivisor * (doubleSafeUbrr + 1));
+  const doubleBaudError = ((doubleActualBaud - effectiveUsartBaud) / effectiveUsartBaud) * 100;
+  const isDoubleBaudErrorHigh = Math.abs(doubleBaudError) > 2.0;
+
+  // Active mode selection based on usartU2X state
+  const divisor = usartU2X ? doubleDivisor : normalDivisor;
+  const safeUbrr = usartU2X ? doubleSafeUbrr : normalSafeUbrr;
+  const actualBaud = usartU2X ? doubleActualBaud : normalActualBaud;
+  const baudError = usartU2X ? doubleBaudError : normalBaudError;
   const isBaudErrorHigh = Math.abs(baudError) > 2.0;
 
   // I2C Calculation
@@ -292,6 +311,16 @@ void Write_OCR1A_Atomic(uint16_t val) {
       {/* C Register Initialization Code Generator (Clean Bitwise Shift Macros & Atomic Blocks) */}
       <RegisterCodeSnippetGenerator selectedMCU={selectedMCU} />
 
+      {/* C Bare-Metal Peripheral Initialization Function Generator (void init_peripherals() & Live Bit Toggles) */}
+      <div id="peripheral-init-function-generator-section" className="scroll-mt-20">
+        <PeripheralInitFunctionGenerator selectedMCU={selectedMCU} />
+      </div>
+
+      {/* Firmware Performance Optimization Guide (volatile placement, 1-cycle bit ops, 2^N memory alignment) */}
+      <div id="firmware-performance-guide-section" className="scroll-mt-20">
+        <FirmwarePerformanceGuide selectedMCU={selectedMCU} />
+      </div>
+
       {/* Register Configuration Comparator (Side-by-Side Dual State Bit-Level Comparison) */}
       <RegisterConfigComparator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
 
@@ -300,6 +329,11 @@ void Write_OCR1A_Atomic(uint16_t val) {
 
       {/* Register Comparison Viewer (Cross-MCU Side-by-Side Bit-level Difference Viewer) */}
       <RegisterComparisonViewer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* Register Compatibility Comparator (Side-by-Side Address Map & Functional Bit Differences) */}
+      <div id="register-compatibility-comparator-section" className="scroll-mt-20">
+        <RegisterCompatibilityComparator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
 
       {/* Register Timeline History (Live Bit-Level History Tracking, Revert & Scrubbing Slider) */}
       <RegisterTimelineHistory selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
@@ -321,8 +355,15 @@ void Write_OCR1A_Atomic(uint16_t val) {
         onNavigateToOscilloscope={onNavigateToOscilloscope || (() => {})}
       />
 
-      {/* Timer/Counter Configuration Wizard (Auto-generate TCCR, OCR, TCNT Register Values & C Code) */}
-      <TimerPrescalerCalculator selectedMCU={selectedMCU} />
+      {/* Bit Manipulation Sandbox (Interactive Register Bit Flags, Live Hex/Bin Math & C Code Masking Generator) */}
+      <div id="bit-manipulation-sandbox-section" className="scroll-mt-20">
+        <BitManipulationSandbox selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* Timer/Counter Configuration Calculator (Target Frequency, System Clock, Prescaler & TCNTn/OCRn Register Calculator) */}
+      <div id="timer-counter-configuration-calculator-section" className="scroll-mt-20">
+        <TimerPrescalerCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
 
       {/* USART Baud Rate Calculator (System Clock, Desired Baud Rate, U2Xn Double Speed Toggle, UBRRn & Error %) */}
       <div id="usart-baud-rate-calculator-section" className="scroll-mt-20">
@@ -332,8 +373,10 @@ void Write_OCR1A_Atomic(uint16_t val) {
       {/* UART Baud Rate Error Calculator (UBRR & Percentage Error Analyzer to avoid communication failures) */}
       <UartBaudRateErrorCalculator selectedMCU={selectedMCU} />
 
-      {/* Watchdog Timer (WDT) Timeout Calculator (Prescaler Settings, Timeout Period & WDTCSR Configuration) */}
-      <WatchdogTimeoutCalculator selectedMCU={selectedMCU} />
+      {/* Watchdog Timer (WDT) Configuration Calculator (Timeout Period, WDP0-3 Prescaler, WDTCSR & System Reset vs Interrupt Mode) */}
+      <div id="watchdog-timer-configuration-calculator-section" className="scroll-mt-20">
+        <WatchdogTimeoutCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
 
       {/* SPI Timing Diagram Visualizer (Modes 0/1/2/3, SCK/MOSI/MISO/SS Waveforms & Hardware Timing Parameters) */}
       <SpiTimingDiagramVisualizer selectedMCU={selectedMCU} />
@@ -359,6 +402,11 @@ void Write_OCR1A_Atomic(uint16_t val) {
 
       {/* ADC Noise & Resolution Simulator (Vref, Expected Signal Range, Quantization Error & PCB Noise Impact on ENOB) */}
       <AdcNoiseResolutionSimulator selectedMCU={selectedMCU} />
+
+      {/* ADC Clock Prescaler & Sample Time Calculator (ADPS2:0, f_ADC, Conversion Speed vs Accuracy) */}
+      <div id="adc-clock-prescaler-calculator-section" className="scroll-mt-20">
+        <AdcClockPrescalerCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
 
       {/* ADC Sampling Rate & Noise Reduction Calculator */}
       <AdcSamplingNoiseCalculator selectedMCU={selectedMCU} />
@@ -526,25 +574,115 @@ void Write_OCR1A_Atomic(uint16_t val) {
               </label>
             </div>
 
-            {/* Result Display Box */}
-            <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800/80 space-y-2 text-xs">
-              <div className="flex justify-between items-center">
-                <span className="text-slate-400">계산된 UBRR 값:</span>
-                <span className="font-mono font-bold text-amber-400 text-sm">
-                  {safeUbrr} <span className="text-xs text-slate-500">(0x{safeUbrr.toString(16).padStart(4, '0').toUpperCase()})</span>
-                  <span className="text-[11px] text-slate-400 ml-2 font-normal">
-                    [{ubrrHReg}: {(safeUbrr >> 8) & 0x0F}, {ubrrLReg}: {safeUbrr & 0xFF}]
-                  </span>
+            {/* Dual Mode Comparison Display Box: Normal Speed (U2X=0) vs Double Speed (U2X=1) */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                <span>표준 모드(U2X=0) vs 2배속 모드(U2X=1) 계산 결과:</span>
+                <span className="text-amber-400 font-semibold">클릭하여 활성 모드 전환</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 font-mono text-xs">
+                {/* Normal Speed Card */}
+                <div
+                  onClick={() => setUsartU2X(false)}
+                  className={`p-3 rounded-xl border cursor-pointer transition ${
+                    !usartU2X
+                      ? 'bg-slate-900 border-amber-500/70 shadow-md ring-1 ring-amber-500/40'
+                      : 'bg-slate-950/80 border-slate-800 hover:border-slate-700 opacity-80'
+                  }`}
+                >
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="font-bold text-slate-200 text-xs">Normal Mode (U2X=0)</span>
+                    {!usartU2X ? (
+                      <span className="text-[10px] bg-amber-500 text-slate-950 px-1.5 py-0.2 rounded font-bold">선택됨</span>
+                    ) : (
+                      <span className="text-[10px] text-slate-500">16분주</span>
+                    )}
+                  </div>
+                  <div className="space-y-1 text-[11px]">
+                    <div className="flex justify-between text-slate-400">
+                      <span>공식:</span>
+                      <span className="text-slate-300">UBRR = F_CPU/(16*Baud)-1</span>
+                    </div>
+                    <div className="flex justify-between text-slate-300">
+                      <span>UBRRn 값:</span>
+                      <span className="font-bold text-amber-400">
+                        {normalSafeUbrr} (0x{normalSafeUbrr.toString(16).padStart(4, '0').toUpperCase()})
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-slate-400 text-[10px]">
+                      <span>{ubrrHReg}:{ubrrLReg}:</span>
+                      <span className="text-cyan-400">
+                        0x{(normalSafeUbrr >> 8) & 0x0F} : 0x{(normalSafeUbrr & 0xFF).toString(16).padStart(2, '0').toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-slate-300">
+                      <span>실제 보드레이트:</span>
+                      <span className="text-white">{normalActualBaud.toFixed(1)} bps</span>
+                    </div>
+                    <div className="flex justify-between border-t border-slate-800 pt-1">
+                      <span className="text-slate-400">통신 오차율:</span>
+                      <span className={`font-bold ${isNormalBaudErrorHigh ? 'text-rose-400' : 'text-emerald-400'}`}>
+                        {normalBaudError >= 0 ? '+' : ''}{normalBaudError.toFixed(2)}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Double Speed Card */}
+                <div
+                  onClick={() => setUsartU2X(true)}
+                  className={`p-3 rounded-xl border cursor-pointer transition ${
+                    usartU2X
+                      ? 'bg-slate-900 border-purple-500/70 shadow-md ring-1 ring-purple-500/40'
+                      : 'bg-slate-950/80 border-slate-800 hover:border-slate-700 opacity-80'
+                  }`}
+                >
+                  <div className="flex justify-between items-center mb-1.5">
+                    <span className="font-bold text-slate-200 text-xs">Double Speed (U2X=1)</span>
+                    {usartU2X ? (
+                      <span className="text-[10px] bg-purple-500 text-white px-1.5 py-0.2 rounded font-bold">선택됨</span>
+                    ) : (
+                      <span className="text-[10px] text-slate-500">8분주</span>
+                    )}
+                  </div>
+                  <div className="space-y-1 text-[11px]">
+                    <div className="flex justify-between text-slate-400">
+                      <span>공식:</span>
+                      <span className="text-slate-300">UBRR = F_CPU/(8*Baud)-1</span>
+                    </div>
+                    <div className="flex justify-between text-slate-300">
+                      <span>UBRRn 값:</span>
+                      <span className="font-bold text-purple-300">
+                        {doubleSafeUbrr} (0x{doubleSafeUbrr.toString(16).padStart(4, '0').toUpperCase()})
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-slate-400 text-[10px]">
+                      <span>{ubrrHReg}:{ubrrLReg}:</span>
+                      <span className="text-cyan-400">
+                        0x{(doubleSafeUbrr >> 8) & 0x0F} : 0x{(doubleSafeUbrr & 0xFF).toString(16).padStart(2, '0').toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-slate-300">
+                      <span>실제 보드레이트:</span>
+                      <span className="text-white">{doubleActualBaud.toFixed(1)} bps</span>
+                    </div>
+                    <div className="flex justify-between border-t border-slate-800 pt-1">
+                      <span className="text-slate-400">통신 오차율:</span>
+                      <span className={`font-bold ${isDoubleBaudErrorHigh ? 'text-rose-400' : 'text-emerald-400'}`}>
+                        {doubleBaudError >= 0 ? '+' : ''}{doubleBaudError.toFixed(2)}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Active Selection Summary */}
+              <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800/80 flex justify-between items-center text-xs font-mono">
+                <span className="text-slate-400">
+                  현재 활성 모드: <strong className={usartU2X ? 'text-purple-300' : 'text-amber-400'}>{usartU2X ? 'Double Speed (U2X=1)' : 'Normal Speed (U2X=0)'}</strong>
                 </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-400">실제 생성 보드레이트:</span>
-                <span className="font-mono text-white">{actualBaud.toFixed(2)} bps</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-400">통신 오차율 (Percentage Error):</span>
-                <span className={`font-mono font-bold ${isBaudErrorHigh ? 'text-rose-400' : 'text-emerald-400'}`}>
-                  {baudError >= 0 ? '+' : ''}{baudError.toFixed(2)}% {isBaudErrorHigh ? '(⚠️ 불안정: U2X 체크 권장)' : '(✅ 안정적 통신)'}
+                <span className={`font-bold px-2 py-0.5 rounded text-[11px] ${isBaudErrorHigh ? 'bg-rose-950/60 text-rose-300 border border-rose-800/50' : 'bg-emerald-950/60 text-emerald-300 border border-emerald-800/50'}`}>
+                  오차 {baudError >= 0 ? '+' : ''}{baudError.toFixed(2)}% {isBaudErrorHigh ? '⚠️ 통신 불안정' : '✅ 안정적 통신'}
                 </span>
               </div>
             </div>

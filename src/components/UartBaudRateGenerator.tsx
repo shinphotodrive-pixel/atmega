@@ -694,30 +694,34 @@ uint8_t USART_Receive(void) {
           >
             <div className="flex justify-between items-center mb-2">
               <span className="font-bold text-white text-sm">Normal Speed Mode (U2X = 0)</span>
-              {!isU2X && <span className="text-[10px] bg-amber-500 text-slate-950 px-1.5 py-0.5 rounded font-bold">현재 선택됨</span>}
+              {!isU2X && <span className="text-[10px] bg-amber-500 text-slate-950 px-2 py-0.5 rounded font-bold">현재 선택됨</span>}
             </div>
             <div className="space-y-1.5 text-[11px]">
               <div className="flex justify-between text-slate-400">
-                <span>공식:</span>
-                <span>UBRR = (F_CPU / (16 * Baud)) - 1</span>
+                <span>계산 공식:</span>
+                <span className="text-slate-300">UBRR = (F_CPU / (16 * Baud)) - 1</span>
               </div>
               <div className="flex justify-between text-slate-300">
-                <span>계산된 UBRR:</span>
-                <span className="font-bold text-white">{normalCalc.clampedUbrr} (0x{normalCalc.clampedUbrr.toString(16).toUpperCase()})</span>
+                <span>계산된 UBRR 값:</span>
+                <span className="font-bold text-amber-400">{normalCalc.clampedUbrr} (0x{normalCalc.clampedUbrr.toString(16).toUpperCase()})</span>
+              </div>
+              <div className="flex justify-between text-slate-400 text-[10px]">
+                <span>UBRRH : UBRRL 분할:</span>
+                <span className="text-cyan-400">0x0{normalCalc.ubrrH.toString(16).toUpperCase()} : 0x{normalCalc.ubrrL.toString(16).padStart(2, '0').toUpperCase()}</span>
               </div>
               <div className="flex justify-between text-slate-300">
                 <span>실제 생성 보드레이트:</span>
-                <span className="text-white">{Math.round(normalCalc.actualBaud).toLocaleString()} bps</span>
+                <span className="text-white font-mono">{normalCalc.actualBaud.toFixed(2)} bps</span>
               </div>
-              <div className="flex justify-between border-t border-slate-800 pt-1">
+              <div className="flex justify-between border-t border-slate-800 pt-1.5">
                 <span className="text-slate-400">잠재 통신 오차율:</span>
                 <span
-                  className={`font-bold ${
+                  className={`font-bold px-1.5 py-0.5 rounded ${
                     normalCalc.absError <= 1.5
-                      ? 'text-emerald-400'
+                      ? 'text-emerald-400 bg-emerald-950/60 border border-emerald-800/40'
                       : normalCalc.absError <= 2.5
-                      ? 'text-amber-400'
-                      : 'text-rose-400'
+                      ? 'text-amber-400 bg-amber-950/40'
+                      : 'text-rose-400 bg-rose-950/60 border border-rose-800/60'
                   }`}
                 >
                   {normalCalc.errorPct >= 0 ? '+' : ''}{normalCalc.errorPct.toFixed(2)}%
@@ -737,30 +741,34 @@ uint8_t USART_Receive(void) {
           >
             <div className="flex justify-between items-center mb-2">
               <span className="font-bold text-white text-sm">Double Speed Mode (U2X = 1)</span>
-              {isU2X && <span className="text-[10px] bg-purple-500 text-slate-950 px-1.5 py-0.5 rounded font-bold">현재 선택됨</span>}
+              {isU2X && <span className="text-[10px] bg-purple-500 text-white px-2 py-0.5 rounded font-bold">현재 선택됨</span>}
             </div>
             <div className="space-y-1.5 text-[11px]">
               <div className="flex justify-between text-slate-400">
-                <span>공식:</span>
-                <span>UBRR = (F_CPU / (8 * Baud)) - 1</span>
+                <span>계산 공식:</span>
+                <span className="text-slate-300">UBRR = (F_CPU / (8 * Baud)) - 1</span>
               </div>
               <div className="flex justify-between text-slate-300">
-                <span>계산된 UBRR:</span>
-                <span className="font-bold text-white">{doubleSpeedCalc.clampedUbrr} (0x{doubleSpeedCalc.clampedUbrr.toString(16).toUpperCase()})</span>
+                <span>계산된 UBRR 값:</span>
+                <span className="font-bold text-purple-300">{doubleSpeedCalc.clampedUbrr} (0x{doubleSpeedCalc.clampedUbrr.toString(16).toUpperCase()})</span>
+              </div>
+              <div className="flex justify-between text-slate-400 text-[10px]">
+                <span>UBRRH : UBRRL 분할:</span>
+                <span className="text-cyan-400">0x0{doubleSpeedCalc.ubrrH.toString(16).toUpperCase()} : 0x{doubleSpeedCalc.ubrrL.toString(16).padStart(2, '0').toUpperCase()}</span>
               </div>
               <div className="flex justify-between text-slate-300">
                 <span>실제 생성 보드레이트:</span>
-                <span className="text-white">{Math.round(doubleSpeedCalc.actualBaud).toLocaleString()} bps</span>
+                <span className="text-white font-mono">{doubleSpeedCalc.actualBaud.toFixed(2)} bps</span>
               </div>
-              <div className="flex justify-between border-t border-slate-800 pt-1">
+              <div className="flex justify-between border-t border-slate-800 pt-1.5">
                 <span className="text-slate-400">잠재 통신 오차율:</span>
                 <span
-                  className={`font-bold ${
+                  className={`font-bold px-1.5 py-0.5 rounded ${
                     doubleSpeedCalc.absError <= 1.5
-                      ? 'text-emerald-400'
+                      ? 'text-emerald-400 bg-emerald-950/60 border border-emerald-800/40'
                       : doubleSpeedCalc.absError <= 2.5
-                      ? 'text-amber-400'
-                      : 'text-rose-400'
+                      ? 'text-amber-400 bg-amber-950/40'
+                      : 'text-rose-400 bg-rose-950/60 border border-rose-800/60'
                   }`}
                 >
                   {doubleSpeedCalc.errorPct >= 0 ? '+' : ''}{doubleSpeedCalc.errorPct.toFixed(2)}%

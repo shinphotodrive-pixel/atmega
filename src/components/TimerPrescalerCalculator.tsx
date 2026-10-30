@@ -18,6 +18,7 @@ import { SupportedMCU, MCU_PROFILES } from '../data/pinmapData';
 
 interface Props {
   selectedMCU: SupportedMCU;
+  onSelectMCU?: (mcu: SupportedMCU) => void;
 }
 
 export type TimerId = 'Timer0' | 'Timer1' | 'Timer2' | 'Timer3' | 'Timer4' | 'Timer5';
@@ -114,7 +115,7 @@ const FREQ_PRESETS: FrequencyPreset[] = [
   { label: '38 kHz', freqHz: 38000, desc: 'NEC / RC-5 적외선(IR) 반송파', tag: 'IR통신' }
 ];
 
-export const TimerPrescalerCalculator: React.FC<Props> = ({ selectedMCU }) => {
+export const TimerPrescalerCalculator: React.FC<Props> = ({ selectedMCU, onSelectMCU }) => {
   const mcuProfile = MCU_PROFILES[selectedMCU];
 
   // 1. Available Timers for Current MCU
@@ -577,7 +578,7 @@ export const TimerPrescalerCalculator: React.FC<Props> = ({ selectedMCU }) => {
   };
 
   return (
-    <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden backdrop-blur">
+    <div id="timer-counter-configuration-calculator-section" className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden backdrop-blur scroll-mt-20">
       {/* Background ambient lighting */}
       <div className="absolute -top-32 -right-32 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -590,45 +591,70 @@ export const TimerPrescalerCalculator: React.FC<Props> = ({ selectedMCU }) => {
               <Clock className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2.5 flex-wrap">
                 <h3 className="text-xl font-bold text-white tracking-tight">
-                  Timer/Counter Configurator
+                  Timer/Counter Configuration Calculator (타이머/카운터 설정 계산기)
                 </h3>
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40">
-                  TCNT / OCR / Prescaler Auto Calculator
+                  Target Freq • Prescaler • TCNTn / OCRn Calculator
+                </span>
+                <span className="px-2 py-0.5 rounded-md bg-emerald-950/60 text-emerald-300 border border-emerald-800/40 text-xs font-mono font-bold">
+                  {mcuProfile.name}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                원하는 목표 주파수와 MCU 클럭(F_CPU)을 입력하면 TCNT 프리로드, OCR 비교값, 프리스케일러(Prescaler) 분주비를 계산하고 C 코드를 생성합니다.
+              <p className="text-xs text-slate-400 mt-1 max-w-3xl leading-relaxed">
+                원하는 목표 주파수(Target Frequency)와 시스템 클록(F_CPU)을 입력하면,
+                <strong>CTC 모드 및 PWM 모드</strong>에 필요한 최적의 <strong>프리스케일러(Prescaler)</strong>와 <strong>TCNTn 프리로드 / OCRn 비교일치 레지스터 값</strong>을 자동으로 계산하고 C 코드를 생성합니다.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Timer Selector Pills */}
-        <div className="flex items-center gap-1.5 flex-wrap self-start lg:self-auto bg-slate-950/90 p-1 rounded-xl border border-slate-800">
-          <span className="text-[11px] font-mono font-medium text-slate-400 px-2 flex items-center gap-1">
-            <Cpu className="w-3.5 h-3.5 text-amber-400" /> 타이머:
-          </span>
-          {availableTimers.map((timer) => {
-            const is16 = ['Timer1', 'Timer3', 'Timer4', 'Timer5'].includes(timer);
-            return (
-              <button
-                key={timer}
-                onClick={() => {
-                  setSelectedTimer(timer);
-                  setManualPrescalerOverride(null);
-                }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
-                  activeTimer === timer
-                    ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/25 ring-2 ring-amber-400'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-                }`}
-              >
-                {timer} <span className="text-[9px] font-normal opacity-80">({is16 ? '16b' : '8b'})</span>
-              </button>
-            );
-          })}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Quick MCU Switcher */}
+          {onSelectMCU && (
+            <div className="flex items-center gap-1 bg-slate-950/80 p-1.5 rounded-xl border border-slate-800 shrink-0">
+              {(['atmega2560', 'atmega640', 'atmega128', 'atmega328p'] as SupportedMCU[]).map((mcuId) => (
+                <button
+                  key={mcuId}
+                  onClick={() => onSelectMCU(mcuId)}
+                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition ${
+                    selectedMCU === mcuId
+                      ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {MCU_PROFILES[mcuId].name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Timer Selector Pills */}
+          <div className="flex items-center gap-1.5 flex-wrap self-start lg:self-auto bg-slate-950/90 p-1 rounded-xl border border-slate-800">
+            <span className="text-[11px] font-mono font-medium text-slate-400 px-2 flex items-center gap-1">
+              <Cpu className="w-3.5 h-3.5 text-amber-400" /> 타이머:
+            </span>
+            {availableTimers.map((timer) => {
+              const is16 = ['Timer1', 'Timer3', 'Timer4', 'Timer5'].includes(timer);
+              return (
+                <button
+                  key={timer}
+                  onClick={() => {
+                    setSelectedTimer(timer);
+                    setManualPrescalerOverride(null);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
+                    activeTimer === timer
+                      ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/25 ring-2 ring-amber-400'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  }`}
+                >
+                  {timer} <span className="text-[9px] font-normal opacity-80">({is16 ? '16b' : '8b'})</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
