@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Zap, AlertTriangle, ShieldCheck, Terminal, Copy, Check, LifeBuoy } from 'lucide-react';
+import { Zap, AlertTriangle, ShieldCheck, ShieldAlert, Terminal, Copy, Check, LifeBuoy } from 'lucide-react';
 import { SupportedMCU, MCU_PROFILES } from '../data/pinmapData';
 import { DynamicPowerConsumptionEstimator } from './DynamicPowerConsumptionEstimator';
 import { SleepModeEnergyAdvisor } from './SleepModeEnergyAdvisor';
 import { SleepModeDesignGuide } from './SleepModeDesignGuide';
+import { WatchdogTimerCalculator } from './WatchdogTimerCalculator';
 import { EnergyEstimator } from './EnergyEstimator';
 import { VoltageRegulatorPowerBudgeting } from './VoltageRegulatorPowerBudgeting';
 import { BootloaderSizeCalculator, BootloaderWordSize } from './BootloaderSizeCalculator';
@@ -219,6 +220,31 @@ export const PowerAndFusesTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) 
               {currentProfile.name}의 전압 대 주파수 안전 동작 곡선, 대기전류 절감 슬립 모드,
               퓨즈 비트 계산기 및 벽돌(Brick) 복구 방법, 전용 실리콘 에라타(Silicon Errata) 회피책을 확인하세요.
             </p>
+
+            {/* Quick Tool Jump Bar */}
+            <div className="mt-4 pt-3.5 border-t border-slate-800/80 flex flex-wrap items-center gap-2 text-xs">
+              <span className="text-slate-400 font-mono text-[11px]">워치독 & 전력 핵심 도구:</span>
+              <button
+                onClick={() => {
+                  const el = document.getElementById('watchdog-timer-calculator-section');
+                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+                className="px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/35 transition flex items-center gap-1.5 font-bold shadow-sm"
+              >
+                <ShieldAlert className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
+                <span>워치독 타이머 (WDT) 구성 계산기 ({selectedMCU === 'atmega128' ? 'WDTCR' : 'WDTCSR'})</span>
+              </button>
+              <button
+                onClick={() => {
+                  const el = document.getElementById('sleep-mode-design-guide-section');
+                  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }}
+                className="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/35 transition flex items-center gap-1.5 font-bold shadow-sm"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>저전력 Sleep 모드 가이드</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -249,6 +275,11 @@ export const PowerAndFusesTab: React.FC<Props> = ({ selectedMCU, onSelectMCU }) 
       {/* 저전력(Sleep) 모드 설계 가이드 (대기전류 차트 & 5대 클럭 도메인 활성화 매트릭스) */}
       <div id="sleep-mode-design-guide-section" className="scroll-mt-20">
         <SleepModeDesignGuide selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* Watchdog Timer (WDT) Configuration Calculator (WDTCR/WDTCSR Register Hex, Time-out Periods & Interrupt/Reset Modes) */}
+      <div id="watchdog-timer-calculator-section" className="scroll-mt-20">
+        <WatchdogTimerCalculator selectedMCU={selectedMCU} />
       </div>
 
       {/* Energy Estimator Component (Dynamic mA, Power-down, Duty Cycle, Battery Life) */}

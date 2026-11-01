@@ -21,10 +21,13 @@ import {
   Sparkles,
   Code2,
   FileText,
-  Activity
+  Activity,
+  Radio
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { SupportedMCU, MCU_PROFILES } from '../data/pinmapData';
+import { I2cBaudRateCalculator } from './I2cBaudRateCalculator';
+import { EepromEnduranceCalculator } from './EepromEnduranceCalculator';
 
 interface Props {
   selectedMCU: SupportedMCU;
@@ -267,6 +270,31 @@ EEPROM:           0 bytes (0.0% Full)
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Quick Tool Jump Bar */}
+        <div className="mt-4 pt-3.5 border-t border-slate-800/80 flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-slate-400 font-mono text-[11px]">전용 통신/스토리지 계산기:</span>
+          <button
+            onClick={() => {
+              const el = document.getElementById('i2c-baud-rate-calculator-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            className="px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/35 transition flex items-center gap-1.5 font-bold shadow-sm"
+          >
+            <Radio className="w-3.5 h-3.5 animate-pulse" />
+            <span>I2C / TWI 보레이트 계산기 (TWBR & TWSR) 바로가기</span>
+          </button>
+          <button
+            onClick={() => {
+              const el = document.getElementById('eeprom-endurance-calculator-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            className="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/35 transition flex items-center gap-1.5 font-bold shadow-sm"
+          >
+            <HardDrive className="w-3.5 h-3.5 text-amber-400" />
+            <span>EEPROM 수명 & 웨어 레벨링 계산기 바로가기</span>
+          </button>
         </div>
 
         {/* Realistic Firmware Scenario Presets Bar */}
@@ -828,6 +856,12 @@ EEPROM:           0 bytes (0.0% Full)
           </div>
         </div>
       </div>
+
+      {/* I2C / TWI Baud Rate Calculator Sub-Section */}
+      <I2cBaudRateCalculator selectedMCU={selectedMCU} />
+
+      {/* EEPROM Endurance & Wear Leveling Calculator Sub-Section */}
+      <EepromEnduranceCalculator selectedMCU={selectedMCU} />
     </div>
   );
 };

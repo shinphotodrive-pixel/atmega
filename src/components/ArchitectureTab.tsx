@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Cpu, Zap, Layers, Activity, CheckCircle, BarChart3, AlertTriangle, ShieldCheck, Radio } from 'lucide-react';
+import { Cpu, Zap, Layers, Activity, CheckCircle, BarChart3, AlertTriangle, ShieldCheck, Radio, Clock, Gauge } from 'lucide-react';
+import { InstructionTimingCalculator } from './InstructionTimingCalculator';
+import { AdcPrecisionCalculator } from './AdcPrecisionCalculator';
 import { MCU_PROFILES, SupportedMCU } from '../data/pinmapData';
 import { PeripheralSignalVisualizer } from './PeripheralSignalVisualizer';
 import { PeripheralPinMappingDashboard } from './PeripheralPinMappingDashboard';
@@ -248,6 +250,16 @@ export const ArchitectureTab: React.FC<Props> = ({
           <span className="text-slate-400 font-mono text-[11px]">실시간 타이밍 도구:</span>
           <button
             onClick={() => {
+              const el = document.getElementById('instruction-timing-calculator-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            className="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/35 transition flex items-center gap-1.5 font-bold shadow-sm"
+          >
+            <Clock className="w-3.5 h-3.5 text-amber-400" />
+            <span>명령어 타이밍 계산기 (Cycles & ns)</span>
+          </button>
+          <button
+            onClick={() => {
               const el = document.getElementById('instruction-pipeline-visualizer-section');
               if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }}
@@ -275,6 +287,16 @@ export const ArchitectureTab: React.FC<Props> = ({
           >
             <Activity className="w-3.5 h-3.5 text-emerald-400" />
             <span>가상 오실로스코프</span>
+          </button>
+          <button
+            onClick={() => {
+              const el = document.getElementById('adc-precision-calculator-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            className="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/35 transition flex items-center gap-1.5 font-bold shadow-sm"
+          >
+            <Gauge className="w-3.5 h-3.5 text-amber-400" />
+            <span>ADC 정밀도 & 해상도 계산기</span>
           </button>
           <button
             onClick={() => {
@@ -564,6 +586,11 @@ export const ArchitectureTab: React.FC<Props> = ({
         <InstructionPipelineVisualizer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
       </div>
 
+      {/* Instruction Timing Calculator (Specific instruction cycle count & nanosecond execution time) */}
+      <div id="instruction-timing-calculator-section" className="scroll-mt-20">
+        <InstructionTimingCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
       {/* Instruction Execution Time Profiler (Cycle & Nanosecond Latency Analyzer for C & Assembly) */}
       <InstructionExecutionTimeProfiler selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
 
@@ -581,6 +608,11 @@ export const ArchitectureTab: React.FC<Props> = ({
 
       {/* Clock-based Power Analyzer & Voltage-Frequency Operating Range Visualization */}
       <ClockPowerAnalyzer selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+
+      {/* ADC Precision & Resolution Calculator (Vref, Raw Counts, Exact Vin & Common Sampling Noise Errors Table) */}
+      <div id="adc-precision-calculator-section" className="scroll-mt-20">
+        <AdcPrecisionCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
 
       {/* ADC Noise Reduction & Calibration Calculator (Decoupling Cap, VREF & Sampling Rate on ENOB) */}
       <AdcNoiseReductionCalibrationCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />

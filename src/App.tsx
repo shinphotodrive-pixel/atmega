@@ -7,17 +7,18 @@ import { RegistersTab } from './components/RegistersTab';
 import { InterruptsTab } from './components/InterruptsTab';
 import { PowerAndFusesTab } from './components/PowerAndFusesTab';
 import { MemoryMapTab } from './components/MemoryMapTab';
+import { TimerConfigurationTab } from './components/TimerConfigurationTab';
 import { ResourcesTab } from './components/ResourcesTab';
 import { ProgramTab } from './components/ProgramTab';
 import { GlobalRegisterSearch } from './components/GlobalRegisterSearch';
-import { Cpu, HardDrive, Share2, Radio, Layers, Gauge, Activity, Table, Download, Zap, PieChart } from 'lucide-react';
+import { Cpu, HardDrive, Share2, Radio, Layers, Gauge, Activity, Table, Download, Zap, PieChart, Clock } from 'lucide-react';
 import { SupportedMCU, MCU_PROFILES } from './data/pinmapData';
 import { GpioSignalParams, DEFAULT_GPIO_PARAMS } from './data/gpioSignalTypes';
 import confetti from 'canvas-confetti';
 
 export default function App() {
   const [selectedMCU, setSelectedMCU] = useState<SupportedMCU>('atmega640');
-  const [activeTab, setActiveTab] = useState<'comparison' | 'universal_comp' | 'arch' | 'pinmap' | 'registers' | 'interrupts' | 'power' | 'memorymap' | 'resources' | 'program'>('comparison');
+  const [activeTab, setActiveTab] = useState<'comparison' | 'universal_comp' | 'arch' | 'pinmap' | 'registers' | 'interrupts' | 'power' | 'memorymap' | 'timer_config' | 'resources' | 'program'>('comparison');
   const [copiedShare, setCopiedShare] = useState(false);
 
   // Virtual Oscilloscope & GPIO Toggling Shared Parameters
@@ -235,6 +236,17 @@ export default function App() {
                 <span>메모리 맵 (Flash & SRAM)</span>
               </button>
               <button
+                onClick={() => setActiveTab('timer_config')}
+                className={`whitespace-nowrap px-3.5 py-1.5 font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
+                  activeTab === 'timer_config'
+                    ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-bold'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                }`}
+              >
+                <Clock className="w-3.5 h-3.5 text-amber-400" />
+                <span>타이머/카운터 설정기 (0-5)</span>
+              </button>
+              <button
                 onClick={() => setActiveTab('program')}
                 className={`whitespace-nowrap px-3.5 py-1.5 font-bold rounded-lg transition-all flex items-center gap-1.5 ${
                   activeTab === 'program'
@@ -381,6 +393,9 @@ export default function App() {
         )}
         {activeTab === 'memorymap' && (
           <MemoryMapTab selectedMCU={selectedMCU} onSelectMCU={setSelectedMCU} />
+        )}
+        {activeTab === 'timer_config' && (
+          <TimerConfigurationTab selectedMCU={selectedMCU} onSelectMCU={setSelectedMCU} />
         )}
         {activeTab === 'resources' && (
           <ResourcesTab selectedMCU={selectedMCU} onSelectMCU={setSelectedMCU} />
