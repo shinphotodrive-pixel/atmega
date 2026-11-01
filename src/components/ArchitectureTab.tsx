@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { Cpu, Zap, Layers, Activity, CheckCircle, BarChart3, AlertTriangle, ShieldCheck, Radio, Clock, Gauge } from 'lucide-react';
+import { Cpu, Zap, Layers, Activity, CheckCircle, BarChart3, AlertTriangle, ShieldCheck, Radio, Clock, Gauge, Network } from 'lucide-react';
 import { InstructionTimingCalculator } from './InstructionTimingCalculator';
 import { AdcPrecisionCalculator } from './AdcPrecisionCalculator';
+import { UsartBaudRateCalculator } from './UsartBaudRateCalculator';
+import { TwiBitRateGenerator } from './TwiBitRateGenerator';
+import { SpiClockPrescalerCalculator } from './SpiClockPrescalerCalculator';
 import { MCU_PROFILES, SupportedMCU } from '../data/pinmapData';
 import { PeripheralSignalVisualizer } from './PeripheralSignalVisualizer';
 import { PeripheralPinMappingDashboard } from './PeripheralPinMappingDashboard';
@@ -297,6 +300,36 @@ export const ArchitectureTab: React.FC<Props> = ({
           >
             <Gauge className="w-3.5 h-3.5 text-amber-400" />
             <span>ADC 정밀도 & 해상도 계산기</span>
+          </button>
+          <button
+            onClick={() => {
+              const el = document.getElementById('usart-baud-rate-calculator-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            className="px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/35 transition flex items-center gap-1.5 font-bold shadow-sm"
+          >
+            <Radio className="w-3.5 h-3.5 text-cyan-400" />
+            <span>USART 보레이트 & UBRRn 계산기</span>
+          </button>
+          <button
+            onClick={() => {
+              const el = document.getElementById('twi-bit-rate-generator-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            className="px-3 py-1.5 rounded-xl bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 border border-blue-500/35 transition flex items-center gap-1.5 font-bold shadow-sm"
+          >
+            <Network className="w-3.5 h-3.5 text-cyan-400" />
+            <span>TWI (I2C) 비트레이트 발생기</span>
+          </button>
+          <button
+            onClick={() => {
+              const el = document.getElementById('spi-clock-prescaler-calculator-section');
+              if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            className="px-3 py-1.5 rounded-xl bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/35 transition flex items-center gap-1.5 font-bold shadow-sm"
+          >
+            <Zap className="w-3.5 h-3.5 text-indigo-400" />
+            <span>SPI 클럭 프리스케일러 계산기</span>
           </button>
           <button
             onClick={() => {
@@ -612,6 +645,21 @@ export const ArchitectureTab: React.FC<Props> = ({
       {/* ADC Precision & Resolution Calculator (Vref, Raw Counts, Exact Vin & Common Sampling Noise Errors Table) */}
       <div id="adc-precision-calculator-section" className="scroll-mt-20">
         <AdcPrecisionCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* USART Baud Rate & UBRRn Error Calculator (Normal 16x vs Double Speed 8x Modes, Register Splits & C Code) */}
+      <div id="usart-baud-rate-calculator-section" className="scroll-mt-20">
+        <UsartBaudRateCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* TWI (I2C) Bit Rate Generator & TWBR / TWSR Prescaler Analyzer */}
+      <div id="twi-bit-rate-generator-section" className="scroll-mt-20">
+        <TwiBitRateGenerator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
+      </div>
+
+      {/* SPI Clock Prescaler Calculator & SPCR / SPSR Register Analyzer (Master & Slave Modes) */}
+      <div id="spi-clock-prescaler-calculator-section" className="scroll-mt-20">
+        <SpiClockPrescalerCalculator selectedMCU={selectedMCU} onSelectMCU={onSelectMCU} />
       </div>
 
       {/* ADC Noise Reduction & Calibration Calculator (Decoupling Cap, VREF & Sampling Rate on ENOB) */}
